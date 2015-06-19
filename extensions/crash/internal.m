@@ -75,12 +75,12 @@ static int isMainThread(lua_State *L)
 /// Notes:
 ///  * This is probably only useful to extension developers as a useful way of ensuring that you are loading C libraries from the places you expect.
 static int dumpCLIBS(lua_State *L) {
-    int stack_ref;
     int i;
     NSMutableSet *cLibs = [[NSMutableSet alloc] init];
 
+#if LUA_VERSION_NUM < 503 // FIXME: This is broken in 5.3 because CLIBS became a pointer not a string ref
     lua_getfield(L, LUA_REGISTRYINDEX, "_CLIBS");
-    stack_ref = lua_gettop(L);
+    int stack_ref = lua_gettop(L);
 
     lua_pushnil(L);
     while (lua_next(L, stack_ref) != 0) {
@@ -90,6 +90,7 @@ static int dumpCLIBS(lua_State *L) {
         }
         lua_pop(L, 1);
     }
+#endif
 
     i = 1;
     lua_newtable(L);
