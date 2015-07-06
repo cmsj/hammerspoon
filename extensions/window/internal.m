@@ -31,7 +31,6 @@ NSString *windowToKey(AXUIElementRef win) {
 @property NSPoint oldTopLeft;
 @property NSSize newSize;
 @property NSSize oldSize;
-
 @property AXUIElementRef window;
 
 - (void)stopAnimationWithBlock:(void (^)(void))endBlock;
@@ -51,27 +50,27 @@ NSString *windowToKey(AXUIElementRef win) {
 
 - (void)setCurrentProgress:(NSAnimationProgress)progress {
     NSLog(@"setCurrentProgress: %f", progress);
-	[super setCurrentProgress:progress];
-	float value = self.currentValue;
+    [super setCurrentProgress:progress];
+    float value = self.currentValue;
 
-	NSPoint thePoint = (NSPoint) {
-		_oldTopLeft.x + value * (_newTopLeft.x - _oldTopLeft.x),
-		_oldTopLeft.y + value * (_newTopLeft.y - _oldTopLeft.y)
-	};
+    NSPoint thePoint = (NSPoint) {
+        _oldTopLeft.x + value * (_newTopLeft.x - _oldTopLeft.x),
+        _oldTopLeft.y + value * (_newTopLeft.y - _oldTopLeft.y)
+    };
 
-	NSSize theSize = (NSSize) {
-		_oldSize.width + value * (_newSize.width - _oldSize.width),
-		_oldSize.height + value * (_newSize.height - _oldSize.height)
-	};
+    NSSize theSize = (NSSize) {
+        _oldSize.width + value * (_newSize.width - _oldSize.width),
+        _oldSize.height + value * (_newSize.height - _oldSize.height)
+    };
 
-	CFTypeRef positionStorage = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&thePoint));
-	CFTypeRef sizeStorage = (CFTypeRef)(AXValueCreate(kAXValueCGSizeType, (const void *)&theSize));
+    CFTypeRef positionStorage = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&thePoint));
+    CFTypeRef sizeStorage = (CFTypeRef)(AXValueCreate(kAXValueCGSizeType, (const void *)&theSize));
 
-	AXUIElementSetAttributeValue(_window, (CFStringRef)NSAccessibilityPositionAttribute, positionStorage);
-	AXUIElementSetAttributeValue(_window, (CFStringRef)NSAccessibilitySizeAttribute, sizeStorage);
+    AXUIElementSetAttributeValue(_window, (CFStringRef)NSAccessibilityPositionAttribute, positionStorage);
+    AXUIElementSetAttributeValue(_window, (CFStringRef)NSAccessibilitySizeAttribute, sizeStorage);
 
-	if (sizeStorage) CFRelease(sizeStorage);
-	if (positionStorage) CFRelease(positionStorage);
+    if (sizeStorage) CFRelease(sizeStorage);
+    if (positionStorage) CFRelease(positionStorage);
 }
 
 - (void)animationDidEnd:(NSAnimation * __unused)animation {
@@ -167,15 +166,13 @@ static NSSize get_window_size(AXUIElementRef win) {
 }
 
 static int window_transform(lua_State* L) {
+    TransformAnimation *anim = nil;
+    BOOL isAnimationNew = YES;
     AXUIElementRef win = get_window_arg(L, 1);
     NSString *winKey = windowToKey(win);
-    TransformAnimation *anim = nil;
-    NSPoint oldTopLeft = get_window_topleft(win);
-    NSSize oldSize = get_window_size(win);
     NSPoint thePoint = geom_topoint(L, 2);
     NSSize theSize = geom_tosize(L, 3);
     float duration = get_float(L, 4);
-    BOOL isAnimationNew = YES;
 
     if (winKey) {
         anim = [currentAnimations objectForKey:winKey];
@@ -199,12 +196,15 @@ static int window_transform(lua_State* L) {
         anim.duration = duration;
     }
 
+    NSPoint oldTopLeft = get_window_topleft(win);
+    NSSize oldSize = get_window_size(win);
     anim.oldTopLeft = oldTopLeft;
     anim.newTopLeft = thePoint;
     anim.oldSize = oldSize;
     anim.newSize = theSize;
 
     if (!isAnimationNew) {
+        anim.duration = MIN(anim.duration + duration, (anim.duration * anim.currentProgress) + duration);
         anim.currentProgress = 0.0;
     }
 
