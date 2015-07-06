@@ -12,6 +12,17 @@
 #define kCGSDebugOptionNoShadows 16384
 void CGSSetDebugOptions(int);
 
+NSMutableDictionary *currentAnimations;
+
+NSString *windowToKey(AXUIElementRef win) {
+    CGWindowID winid;
+    if (get_window_id(win, &winid)) {
+        return [NSString stringWithFormat:@"%i", winid];
+    } else {
+        return nil;
+    }
+}
+
 @interface TransformAnimation : NSAnimation <NSAnimationDelegate> {
     void (^animationDidStopBlock)(void);
 }
@@ -25,8 +36,6 @@ void CGSSetDebugOptions(int);
 
 - (void)stopAnimationWithBlock:(void (^)(void))endBlock;
 @end
-
-TransformAnimation *currentAnimation;
 
 @implementation TransformAnimation
 
@@ -65,15 +74,23 @@ TransformAnimation *currentAnimation;
 }
 
 - (void)animationDidEnd:(NSAnimation * __unused)animation {
-    currentAnimation = nil;
+    [currentAnimations removeObjectForKey:windowToKey(self.window)];
 }
 
 - (void)animationDidStop:(NSAnimation * __unused)animation {
     animationDidStopBlock();
     animationDidStopBlock = ^{};
-    currentAnimation = nil;
+    [currentAnimations removeObjectForKey:windowToKey(self.window)];
 }
 @end
+
+TransformAnimation *windowToAnimation(AXUIElementRef win) {
+    NSString *key = windowToKey(win);
+    if (key) {
+        return([currentAnimations objectForKey:key]);
+    }
+    return nil;
+}
 
 static NSSize geom_tosize(lua_State* L, int idx) {
     luaL_checktype(L, idx, LUA_TTABLE);
@@ -150,32 +167,40 @@ static NSSize get_window_size(AXUIElementRef win) {
 
 static int window_transform(lua_State* L) {
     AXUIElementRef win = get_window_arg(L, 1);
+    NSString *winKey = windowToKey(win);
+    TransformAnimation *anim = nil;
     NSPoint oldTopLeft = get_window_topleft(win);
     NSSize oldSize = get_window_size(win);
     NSPoint thePoint = geom_topoint(L, 2);
     NSSize theSize = geom_tosize(L, 3);
     float duration = get_float(L, 4);
 
-    if (currentAnimation) {
-        currentAnimation.duration = duration;
-        currentAnimation.oldTopLeft = oldTopLeft;
-        currentAnimation.oldSize = oldSize;
-        currentAnimation.newTopLeft = thePoint;
-        currentAnimation.newSize = theSize;
-        currentAnimation.currentProgress = 0.0;
+    if (winKey) {
+        anim = [currentAnimations objectForKey:winKey];
     } else {
-        TransformAnimation *anim = [[TransformAnimation alloc] initWithDuration:duration animationCurve:NSAnimationEaseInOut];
-        currentAnimation = anim;
+        // FIXME: WAT DO
+        NSLog(@"WAAAAAA NO WINKEY IN WINDOW_TRANSFORM");
+        return 0;
+    }
+
+    if (anim) {
+        anim.currentProgress = 0.0;
+    } else {
+        anim = [[TransformAnimation alloc] initWithDuration:duration animationCurve:NSAnimationEaseInOut];
+        [currentAnimations setObject:anim forKey:winKey];
         anim.delegate = anim;
         anim.animationBlockingMode = NSAnimationNonblocking;
         anim.window = win;
         anim.frameRate = 60.0;
+        anim.duration = duration;
+    }
 
-        anim.oldTopLeft = oldTopLeft;
-        anim.newTopLeft = thePoint;
-        anim.oldSize = oldSize;
-        anim.newSize = theSize;
+    anim.oldTopLeft = oldTopLeft;
+    anim.newTopLeft = thePoint;
+    anim.oldSize = oldSize;
+    anim.newSize = theSize;
 
+    if (!anim.animating) {
         [anim startAnimation];
     }
 
@@ -183,11 +208,12 @@ static int window_transform(lua_State* L) {
 }
 
 static int window_gc(lua_State* L) {
-    if (currentAnimation) {
-        currentAnimation.currentProgress = 1.0;
-        [currentAnimation stopAnimation];
-    }
     AXUIElementRef win = get_window_arg(L, 1);
+    TransformAnimation *anim = windowToAnimation(win);
+    if (anim) {
+        anim.currentProgress = 1.0;
+        [anim stopAnimation];
+    }
     CFRelease(win);
     return 0;
 }
@@ -334,11 +360,12 @@ static int window_isstandard(lua_State* L) {
 /// Returns:
 ///  * A point-table containing the absolute co-ordinates of the top left corner of the window
 static int window_topleft(lua_State* L) {
-    if (currentAnimation) {
-        geom_pushpoint(L, currentAnimation.newTopLeft);
+    AXUIElementRef win = get_window_arg(L, 1);
+    TransformAnimation *anim = windowToAnimation(win);
+    if (anim) {
+        geom_pushpoint(L, anim.newTopLeft);
         return 1;
     }
-    AXUIElementRef win = get_window_arg(L, 1);
     CGPoint topLeft = get_window_topleft(win);
     geom_pushpoint(L, topLeft);
     return 1;
@@ -354,11 +381,12 @@ static int window_topleft(lua_State* L) {
 /// Returns:
 ///  * A size-table containing the width and height of the window
 static int window_size(lua_State* L) {
-    if (currentAnimation) {
-        geom_pushsize(L, currentAnimation.newSize);
+    AXUIElementRef win = get_window_arg(L, 1);
+    TransformAnimation *anim = windowToAnimation(win);
+    if (anim) {
+        geom_pushsize(L, anim.newSize);
         return 1;
     }
-    AXUIElementRef win = get_window_arg(L, 1);
     CGSize size = get_window_size(win);
     geom_pushsize(L, size);
     return 1;
@@ -376,10 +404,11 @@ static int window_size(lua_State* L) {
 static int window_settopleft(lua_State* L) {
     AXUIElementRef win = get_window_arg(L, 1);
     NSPoint thePoint = geom_topoint(L, 2);
-    if (currentAnimation) {
-        currentAnimation.oldTopLeft = get_window_topleft(win);
-        currentAnimation.newTopLeft = thePoint;
-        currentAnimation.currentProgress = 0.0;
+    TransformAnimation *anim = windowToAnimation(win);
+    if (anim) {
+        anim.oldTopLeft = get_window_topleft(win);
+        anim.newTopLeft = thePoint;
+        anim.currentProgress = 0.0;
     } else {
         CFTypeRef positionStorage = (CFTypeRef)(AXValueCreate(kAXValueCGPointType, (const void *)&thePoint));
         AXUIElementSetAttributeValue(win, (CFStringRef)NSAccessibilityPositionAttribute, positionStorage);
@@ -403,10 +432,11 @@ static int window_settopleft(lua_State* L) {
 static int window_setsize(lua_State* L) {
     AXUIElementRef win = get_window_arg(L, 1);
     NSSize theSize = geom_tosize(L, 2);
-    if (currentAnimation) {
-        currentAnimation.oldSize = get_window_size(win);
-        currentAnimation.newSize = theSize;
-        currentAnimation.currentProgress = 0.0;
+    TransformAnimation *anim = windowToAnimation(win);
+    if (anim) {
+        anim.oldSize = get_window_size(win);
+        anim.newSize = theSize;
+        anim.currentProgress = 0.0;
     } else {
         CFTypeRef sizeStorage = (CFTypeRef)(AXValueCreate(kAXValueCGSizeType, (const void *)&theSize));
         AXUIElementSetAttributeValue(win, (CFStringRef)NSAccessibilitySizeAttribute, sizeStorage);
@@ -446,9 +476,11 @@ cleanup:
 /// Returns:
 ///  * The `hs.window` object
 static int window_togglezoom(lua_State* L) {
-    if (currentAnimation) {
-        currentAnimation.currentProgress = 1.0;
-        [currentAnimation stopAnimationWithBlock:^{ window_pressbutton(L, kAXZoomButtonAttribute); }];
+    AXUIElementRef win = get_window_arg(L, 1);
+    TransformAnimation *anim = windowToAnimation(win);
+    if (anim) {
+        anim.currentProgress = 1.0;
+        [anim stopAnimationWithBlock:^{ window_pressbutton(L, kAXZoomButtonAttribute); }];
     } else {
         window_pressbutton(L, kAXZoomButtonAttribute);
     }
@@ -757,7 +789,7 @@ static const luaL_Reg windowlib[] = {
 };
 
 int luaopen_hs_window_internal(lua_State* L) {
-    currentAnimation = nil;
+    currentAnimations = [[NSMutableDictionary alloc] init];
     luaL_newlib(L, windowlib);
 
     // Inherit hs.uielement

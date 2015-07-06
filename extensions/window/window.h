@@ -6,6 +6,13 @@
 
 extern AXError _AXUIElementGetWindow(AXUIElementRef, CGWindowID* out);
 
+BOOL get_window_id(AXUIElementRef win, CGWindowID *id) {
+    if (_AXUIElementGetWindow(win, id) != kAXErrorSuccess) {
+        return NO;
+    }
+    return YES;
+}
+
 static void new_window(lua_State* L, AXUIElementRef win) {
     AXUIElementRef* winptr = lua_newuserdata(L, sizeof(AXUIElementRef));
     *winptr = win;
@@ -22,8 +29,7 @@ static void new_window(lua_State* L, AXUIElementRef win) {
     }
 
     CGWindowID winid;
-    AXError err = _AXUIElementGetWindow(win, &winid);
-    if (!err) {
+    if (get_window_id(win, &winid)) {
         lua_pushinteger(L, winid);
         lua_setfield(L, -2, "id");
     }
