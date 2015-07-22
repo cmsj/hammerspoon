@@ -8,7 +8,7 @@
 
 #define USERDATA_TAG "hs.httpserver"
 #define get_item_arg(L, idx) ((httpserver_t *)luaL_checkudata(L, idx, USERDATA_TAG))
-#define getUserData(L, idx) (__bridge HSHTTPServer *)get_item_arg(L, idx)
+#define getUserData(L, idx) (__bridge HSHTTPServer *)((httpserver_t *)get_item_arg(L, idx))->server
 
 // ObjC Class definitions
 @interface HSHTTPServer : HTTPServer
@@ -16,6 +16,8 @@
 @end
 
 @interface HSHTTPDataResponse : HTTPDataResponse
+@property int hsStatus;
+@property (nonatomic, copy) NSMutableDictionary *hsHeaders;
 @end
 
 @interface HSHTTPConnection : HTTPConnection
@@ -28,31 +30,80 @@
 
 @implementation HSHTTPDataResponse
 
--(NSDictionary *)httpHeaders {
-    return @{@"Content-Type": @"application/json;charset=utf-8"};
+- (NSInteger)status {
+    return self.hsStatus;
 }
 
+- (NSDictionary *)httpHeaders {
+    return self.hsHeaders;
+}
 @end
 
 @implementation HSHTTPConnection
 
-- (BOOL)supportsMethod:(NSString *)method atPath:(NSString * __unused)path {
-    if ([method isEqualToString:@"GET"]) {
-        return YES;
-    }
-    return NO;
+- (BOOL)supportsMethod:(NSString * __unused)method atPath:(NSString * __unused)path {
+    return YES;
 }
 
 - (NSObject<HTTPResponse> *)httpResponseForMethod:(NSString *)method URI:(NSString *)path {
-    NSLog(@"%@ %@", method, path);
-    if ([method isEqualToString:@"GET"]) {
-        // FIXME: Get this data from the Lua callback
-        NSData *responseData = [@"{\"working\":\"true\"}" dataUsingEncoding:NSUTF8StringEncoding];
-        HSHTTPDataResponse *response = [[HSHTTPDataResponse alloc] initWithData:responseData];
-        return response;
+    __block int responseCode;
+    __block NSMutableDictionary *responseHeaders = nil;
+    __block NSString *responseBody = nil;
+
+    void (^block)(void) = ^{
+        LuaSkin *skin = [LuaSkin shared];
+        lua_State *L = skin.L;
+
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ((HSHTTPServer *)config.server).fn);
+        lua_pushstring(L, [method UTF8String]);
+        lua_pushstring(L, [path UTF8String]);
+
+        if (![skin protectedCallAndTraceback:2 nresults:3]) {
+            showError(L, "ERROR: hs.httpserver callback failed");
+            responseCode = 503;
+            responseBody = [NSString stringWithUTF8String:"An error occurred during hs.httpserver callback handling"];
+        } else {
+            if (!(lua_type(L, -3) == LUA_TSTRING && lua_type(L, -2) == LUA_TNUMBER && lua_type(L, -1) == LUA_TTABLE)) {
+                showError(L, "ERROR: hs.httpserver callbacks must return three values. A string for the response body, an integer response code and a table of headers");
+                responseCode = 503;
+                responseBody = [NSString stringWithUTF8String:"Callback handler returned invalid values"];
+            } else {
+                responseBody = [NSString stringWithUTF8String:lua_tostring(L, -3)];
+                responseCode = lua_tointeger(L, -2);
+
+                responseHeaders = [[NSMutableDictionary alloc] init];
+                BOOL headerTypeError = NO;
+                // Push nil onto the stack, which means that the table has moved from -1 to -2
+                lua_pushnil(L);
+                while (lua_next(L, -2)) {
+                    if (lua_type(L, -1) == LUA_TSTRING && lua_type(L, -2) == LUA_TSTRING) {
+                        NSString *key = lua_to_nsstring(L, -2);
+                        NSString *value = lua_to_nsstring (L, -1);
+                        [responseHeaders setObject:value forKey:key];
+                    } else {
+                        headerTypeError = YES;
+                    }
+                    lua_pop(L, 1);
+                }
+                if (headerTypeError) {
+                    showError(L, "ERROR: hs.httpserver callback returned a header table that contains non-strings");
+                }
+            }
+        }
+    };
+
+    // Make sure we do all the above Lua work on the main thread
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), block);
     }
 
-    return [super httpResponseForMethod:method URI:path];
+    HSHTTPDataResponse *response = [[HSHTTPDataResponse alloc] initWithData:[responseBody dataUsingEncoding:NSUTF8StringEncoding]];
+    response.hsStatus = responseCode;
+    response.hsHeaders = responseHeaders;
+
+    return response;
 }
 
 @end
@@ -86,6 +137,52 @@ static int httpserver_new(lua_State *L) {
     return 1;
 }
 
+/// hs.httpserver:setCallback([callback]) -> object
+/// Method
+/// Sets the request handling callback for an HTTP server object
+///
+/// Parameters:
+///  * callback - An optional function that will be called to process each incoming HTTP request, or nil to remove an existing callback. See the notes section below for more information about this callback
+///
+/// Returns:
+///  * The `hs.httpserver` object
+///
+/// Notes:
+///  * The callback will be passed two arguments:
+///   * A string containing the type of request (i.e. `GET`/`POST`/`DELETE`/etc)
+///   * A string containing the path element of the request (e.g. `/index.html`)
+///  * The callback *must* return three values:
+///   * A string containing the body of the response
+///   * An integer containing the response code (e.g. 200 for a successful request)
+///   * A table containing additional HTTP headers to set (or an empty table, `{}`, if no extra headers are required)
+static int httpserver_setCallback(lua_State *L) {
+    HSHTTPServer *server = getUserData(L, 1);
+
+    switch (lua_type(L, 2)) {
+        case LUA_TFUNCTION:
+            if (server.fn != LUA_NOREF) {
+                luaL_unref(L, LUA_REGISTRYINDEX, server.fn);
+                server.fn = LUA_NOREF;
+            }
+            lua_pushvalue(L, 2);
+            server.fn = luaL_ref(L, LUA_REGISTRYINDEX);
+            break;
+        case LUA_TNIL:
+        case LUA_TNONE:
+            if (server.fn != LUA_NOREF) {
+                luaL_unref(L, LUA_REGISTRYINDEX, server.fn);
+                server.fn = LUA_NOREF;
+            }
+            break;
+        default:
+            showError(L, "ERROR: Unknown type passed to hs.httpserver:setCallback(). Argument must be a function or nil");
+            break;
+    }
+
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
 /// hs.httpserver:start() -> object
 /// Method
 /// Starts an HTTP server object
@@ -96,13 +193,16 @@ static int httpserver_new(lua_State *L) {
 /// Returns:
 ///  * The `hs.httpserver` object
 static int httpserver_start(lua_State *L) {
-    httpserver_t *httpServer = get_item_arg(L, 1);
-    HSHTTPServer *server = (__bridge HSHTTPServer *)httpServer->server;
+    HSHTTPServer *server = getUserData(L, 1);
 
-    // FIXME: Check for server.fn != LUA_NOREF. No point running without a callback. Or is there? We could just log the requests?
-    NSError *error = nil;
-    if (![server start:&error]) {
-          showError(L, "ERROR: Unable to start hs.httpserver object");
+    if (server.fn == LUA_NOREF) {
+        showError(L, "ERROR: No callback handler set on hs.httpserver object");
+    } else {
+        NSError *error = nil;
+        if (![server start:&error]) {
+            CLS_NSLOG(@"ERROR: Unable to start hs.httpserver object: %@", error);
+            showError(L, "ERROR: Unable to start hs.httpserver object");
+        }
     }
 
     lua_pushvalue(L, 1);
@@ -119,8 +219,7 @@ static int httpserver_start(lua_State *L) {
 /// Returns:
 ///  * The `hs.httpserver` object
 static int httpserver_stop(lua_State *L) {
-    httpserver_t *httpServer = get_item_arg(L, 1);
-    HSHTTPServer *server = (__bridge HSHTTPServer *)httpServer->server;
+    HSHTTPServer *server = getUserData(L, 1);
     [server stop];
 
     lua_pushvalue(L, 1);
@@ -138,7 +237,7 @@ static int httpserver_stop(lua_State *L) {
 ///  * A number containing the TCP port
 static int httpserver_getPort(lua_State *L) {
     HSHTTPServer *server = getUserData(L, 1);
-    lua_pushinteger(L, [server port]);
+    lua_pushinteger(L, [server listeningPort]);
     return 1;
 }
 
@@ -158,9 +257,45 @@ static int httpserver_setPort(lua_State *L) {
     return 1;
 }
 
+/// hs.httpserver:getName() -> string
+/// Method
+/// Gets the Bonjour name the server is configured to advertise itself as
+///
+/// Parameters:
+///  * None
+///
+/// Returns:
+///  * A string containing the Bonjour name of this server
+static int httpserver_getName(lua_State *L) {
+    HSHTTPServer *server = getUserData(L, 1);
+    lua_pushstring(L, [[server name] UTF8String]);
+    return 1;
+}
+
+/// hs.httpserver:setName(name) -> object
+/// Method
+/// Sets the Bonjour name the server should advertise itself as
+///
+/// Parameters:
+///  * name - A string containing the Bonjour name for the server
+///
+/// Returns:
+///  * The `hs.httpserver` object
+static int httpserver_setName(lua_State *L) {
+    HSHTTPServer *server = getUserData(L, 1);
+    [server setName:lua_to_nsstring(L, 2)];
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
 static int httpserver_objectGC(lua_State *L) {
     lua_pushcfunction(L, httpserver_stop);
     lua_pushvalue(L, 1);
+    lua_call(L, 1, 1);
+
+    lua_pushcfunction(L, httpserver_setCallback);
+    lua_pushvalue(L, 1);
+    lua_pushnil(L);
     lua_call(L, 1, 1);
 
     httpserver_t *httpServer = get_item_arg(L, 1);
@@ -176,12 +311,14 @@ static const luaL_Reg httpserverLib[] = {
     {}
 };
 
-// hs.httpserver:name,setName
 static const luaL_Reg httpserverObjectLib[] = {
     {"start", httpserver_start},
     {"stop", httpserver_stop},
     {"getPort", httpserver_getPort},
     {"setPort", httpserver_setPort},
+    {"getName", httpserver_getName},
+    {"setName", httpserver_setName},
+    {"setCallback", httpserver_setCallback},
 
     {"__gc", httpserver_objectGC},
     {}
