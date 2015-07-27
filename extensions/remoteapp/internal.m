@@ -18,21 +18,21 @@ NSString *sessionStateToString(MCSessionState state) {
 NSString *SecIdentityRefFingerprint(SecIdentityRef identityRef) {
     NSMutableString *output = [[NSMutableString alloc] init];
     SecCertificateRef certRef;
-    
+
     SecIdentityCopyCertificate(identityRef, &certRef);
     CFDataRef data = SecCertificateCopyData(certRef);
-    
-    unsigned char sha1[CC_SHA1_DIGEST_LENGTH+1];
-    CC_SHA1(CFDataGetBytePtr(data), (CC_LONG)CFDataGetLength(data), sha1);
-    sha1[CC_SHA1_DIGEST_LENGTH] = 0;
-    
+
+    unsigned char md5[CC_MD5_DIGEST_LENGTH+1];
+    CC_MD5(CFDataGetBytePtr(data), (CC_LONG)CFDataGetLength(data), md5);
+    md5[CC_MD5_DIGEST_LENGTH] = 0;
+
     for (unsigned int i = 0; i < (unsigned int)CFDataGetLength(data); i++) {
-        [output appendFormat:@"%02x", sha1[i]];
+        [output appendFormat:@"%02x", md5[i]];
     }
-    
+
     CFRelease(certRef);
     CFRelease(data);
-    
+
     return (NSString *)output;
 }
 
@@ -120,7 +120,7 @@ static HSRemoteHandler *remoteHandler;
 
     SecIdentityRef identityRef = (__bridge SecIdentityRef)[certificate objectAtIndex:0];
 
-    NSLog(@"Found a SHA1 of: %@", SecIdentityRefFingerprint(identityRef));
+    NSLog(@"Found a MD5 of: %@", SecIdentityRefFingerprint(identityRef));
     // FIXME: Have the user verify
     certificateHandler(YES);
 }
