@@ -6,7 +6,6 @@
 //
 
 #import "MYAnonymousIdentity.h"
-#import "CollectionUtils.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <Security/Security.h>
 
@@ -92,7 +91,7 @@ static BOOL checkErr(OSStatus err, NSError** outError) {
 #if !TARGET_OS_IPHONE
     NSString* message = CFBridgingRelease(SecCopyErrorMessageString(err, NULL));
     if (message)
-        info = @{NSLocalizedDescriptionKey: $sprintf(@"%@ (%d)", message, (int)err)};
+        info = @{NSLocalizedDescriptionKey: [NSString stringWithFormat:@"%@ (%d)", message, (int)err]};
 #endif
     if (outError)
         *outError = [NSError errorWithDomain: NSOSStatusErrorDomain code: err userInfo: info];
@@ -134,7 +133,7 @@ static BOOL generateRSAKeyPair(int sizeInBits,
 // Generates a self-signed certificate, returning the cert data.
 static NSData* generateAnonymousCert(SecKeyRef publicKey, SecKeyRef privateKey,
                                      NSTimeInterval expirationInterval,
-                                     NSError** outError)
+                                     NSError** outError __unused)
 {
     // Read the original template certificate file:
     NSMutableData* data = [NSMutableData dataWithBytes: kCertTemplate length: sizeof(kCertTemplate)];
@@ -252,12 +251,12 @@ static SecCertificateRef addCertToKeychain(NSData* certData, NSString* label,
         return NULL;
     }
     CFAutorelease(certRef);
-    NSDictionary* attrs = $dict({(__bridge id)kSecClass,     (__bridge id)kSecClassCertificate},
-                                {(__bridge id)kSecValueRef,  (__bridge id)certRef},
+    NSDictionary* attrs = @{(__bridge id)kSecClass:     (__bridge id)kSecClassCertificate,
+                            (__bridge id)kSecValueRef:  (__bridge id)certRef,
 #if TARGET_OS_IPHONE
-                                {(__bridge id)kSecAttrLabel, label}
+                            (__bridge id)kSecAttrLabel: label
 #endif
-                                );
+                            };
     CFTypeRef result;
     OSStatus err = SecItemAdd((__bridge CFDictionaryRef)attrs, &result);
 
@@ -374,7 +373,7 @@ static double relativeTimeFromOID(NSDictionary* values, CFTypeRef oid) {
 
 
 // Returns YES if the cert has not yet expired.
-static BOOL checkCertValid(SecCertificateRef cert, NSTimeInterval expirationInterval) {
+static BOOL checkCertValid(SecCertificateRef cert, NSTimeInterval expirationInterval __unused) {
 #if TARGET_OS_IPHONE
     NSDictionary* attrs = getItemAttributes(cert);
     // The fucked-up iOS Keychain API doesn't expose the cert expiration date, only the date the
@@ -392,8 +391,8 @@ static BOOL checkCertValid(SecCertificateRef cert, NSTimeInterval expirationInte
 
 
 BOOL MYDeleteAnonymousIdentity(NSString* label) {
-    NSDictionary* attrs = $dict({(__bridge id)kSecClass,     (__bridge id)kSecClassIdentity},
-                                {(__bridge id)kSecAttrLabel, label});
+    NSDictionary* attrs = @{(__bridge id)kSecClass:     (__bridge id)kSecClassIdentity,
+                            (__bridge id)kSecAttrLabel: label};
     OSStatus err = SecItemDelete((__bridge CFDictionaryRef)attrs);
     if (err != noErr && err != errSecItemNotFound)
         NSLog(@"Unexpected error %d deleting identity from keychain", (int)err);
