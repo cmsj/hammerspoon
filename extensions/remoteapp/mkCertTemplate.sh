@@ -6,6 +6,7 @@ echo "== Dumping ASN.1 structure of cert.cer:"
 openssl asn1parse -inform DER -in cert.cer -dump -i
 echo ""
 echo "== Hexdump of cert.cer:"
-hexdump -e '"\t" 16/1 "0x%02x, " "\n"' cert.cer
+#hexdump -e '"\t" 16/1 "0x%02x, " "\n"' cert.cer
+openssl x509 -C -inform DER -in cert.cer -noout
 echo ""
 echo "== Done"
