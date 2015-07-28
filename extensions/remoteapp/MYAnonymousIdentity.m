@@ -81,7 +81,7 @@ SecIdentityRef MYGetOrCreateAnonymousIdentity(NSString* label,
             CFAutorelease(ident);
 #endif
         if (!ident)
-            Warn(@"MYAnonymousIdentity: Crap, can't find the identity I just created!");
+            NSLog(@"MYAnonymousIdentity: Can't find identity we just created");
     }
     return ident;
 }
