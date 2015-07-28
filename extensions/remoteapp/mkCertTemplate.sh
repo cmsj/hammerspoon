@@ -17,19 +17,16 @@ INCLUDE_FILE="HammerspoonRemoteCertTemplate.h"
 
 echo "=== Calculating offsets..."
 
-SERIAL_OFFSET=$(( $(grep INTEGER cert.cer.asn1 | sed -n 2p | sed -e 's/:.*//') + 2 ))
-echo "#define kSerialOffset    ${SERIAL_OFFSET}" >>${INCLUDE_FILE}
-
-ISSUEDATE_OFFSET=$(( $(grep UTCTIME cert.cer.asn1 | sed -n 1p | sed -e 's/:.*//') + 2 ))
-echo "#define kIssueDateOffset ${ISSUEDATE_OFFSET}" >>${INCLUDE_FILE}
-
-EXPIRYDATE_OFFSET=$(( $(grep UTCTIME cert.cer.asn1 | sed -n 2p | sed -e 's/:.*//') + 2 ))
-echo "#define kExpDateOffset   ${EXPIRYDATE_OFFSET}" >>${INCLUDE_FILE}
-
-PUBLICKEY_OFFSET=$(( $(grep "BIT STRING" cert.cer.asn1 | sed -n 1p | sed -e 's/:.*//') + 5 ))
-echo "#define kPublicKeyOffset ${PUBLICKEY_OFFSET}" >>${INCLUDE_FILE}
-
+SERIAL_OFFSET=$(( 2 + $(grep INTEGER cert.cer.asn1 | sed -n 2p | sed -e 's/:.*//') ))
+ISSUEDATE_OFFSET=$(( 2 + $(grep UTCTIME cert.cer.asn1 | sed -n 1p | sed -e 's/:.*//') ))
+EXPIRYDATE_OFFSET=$(( 2 + $(grep UTCTIME cert.cer.asn1 | sed -n 2p | sed -e 's/:.*//') ))
+PUBLICKEY_OFFSET=$(( 5 + $(grep "BIT STRING" cert.cer.asn1 | sed -n 1p | sed -e 's/:.*//') ))
 CSR_LENGTH=$(grep "BIT STRING" cert.cer.asn1 | sed -n 2p | sed -e 's/:.*//')
+
+echo "#define kSerialOffset    ${SERIAL_OFFSET}" >>${INCLUDE_FILE}
+echo "#define kIssueDateOffset ${ISSUEDATE_OFFSET}" >>${INCLUDE_FILE}
+echo "#define kExpDateOffset   ${EXPIRYDATE_OFFSET}" >>${INCLUDE_FILE}
+echo "#define kPublicKeyOffset ${PUBLICKEY_OFFSET}" >>${INCLUDE_FILE}
 echo "#define kCSRLength     ${CSR_LENGTH}u" >>${INCLUDE_FILE}
 
 echo "" >>${INCLUDE_FILE}
