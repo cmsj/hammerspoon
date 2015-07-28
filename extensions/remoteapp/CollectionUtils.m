@@ -7,12 +7,11 @@
 //
 
 #import "CollectionUtils.h"
-#import "Test.h"
 
 
 NSDictionary* _dictof(const _dictpair pairs[], size_t count)
 {
-    CAssert(count<10000);
+    if (count > 10000) return nil;
     id objects[count], keys[count];
     size_t n = 0;
     const _dictpair* pair = pairs;
@@ -29,7 +28,7 @@ NSDictionary* _dictof(const _dictpair pairs[], size_t count)
 
 NSMutableDictionary* _mdictof(const _dictpair pairs[], size_t count)
 {
-    CAssert(count<10000);
+    if (count > 10000) return nil;
     id objects[count], keys[count];
     size_t n = 0;
     const _dictpair* pair = pairs;
@@ -362,47 +361,6 @@ void cfSetObj(void *var, CFTypeRef value) {
 @end
 #endif // NS_BLOCKS_AVAILABLE && MY_ENABLE_ENUMERATOR_MAP
 
-
-#if DEBUG
-#import "Test.h"
-
-TestCase(CollectionUtils) {
-    NSArray *a = $array(@"foo",@"bar",@"baz");
-    //Log(@"a = %@",a);
-    NSArray *aa = [NSArray arrayWithObjects: @"foo",@"bar",@"baz",nil];
-    CAssertEqual(a,aa);
-
-    const char *cstr = "a C string";
-    id o = $object(cstr);
-    //Log(@"o = %@",o);
-    CAssertEqual(o,@"a C string");
-
-    NSDictionary *d = $dict({@"int",    $object(1)},
-                            {@"double", $object(-1.1)},
-                            {@"char",   $object('x')},
-                            {@"ulong",  $object(1234567UL)},
-                            {@"longlong",$object(987654321LL)},
-                            {@"cstr",   $object(cstr)});
-    //Log(@"d = %@",d);
-    NSDictionary *dd = [NSDictionary dictionaryWithObjectsAndKeys:
-                        [NSNumber numberWithInt: 1],                    @"int",
-                        [NSNumber numberWithDouble: -1.1],              @"double",
-                        [NSNumber numberWithChar: 'x'],                 @"char",
-                        [NSNumber numberWithUnsignedLong: 1234567UL],   @"ulong",
-                        [NSNumber numberWithDouble: 987654321LL],       @"longlong",
-                        @"a C string",                                  @"cstr",
-                        nil];
-    CAssertEqual(d,dd);
-
-#if NS_BLOCKS_AVAILABLE && MY_ENABLE_ENUMERATOR_MAP
-    NSEnumerator* source = [$array(@"teenage", @"mutant", @"ninja", @"turtles") objectEnumerator];
-    NSEnumerator* mapped = [source my_map: ^id(NSString* str) {
-        return [str hasPrefix: @"t"] ? [str uppercaseString] : nil;
-    }];
-    CAssertEqual(mapped.allObjects, $array(@"TEENAGE", @"TURTLES"));
-#endif
-}
-#endif
 
 /*
  Copyright (c) 2008-2013, Jens Alfke <jens@mooseyard.com>. All rights reserved.

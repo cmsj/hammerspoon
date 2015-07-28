@@ -7,7 +7,6 @@
 
 #import "MYAnonymousIdentity.h"
 #import "CollectionUtils.h"
-#import "Test.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <Security/Security.h>
 
@@ -60,7 +59,7 @@ SecIdentityRef MYGetOrCreateAnonymousIdentity(NSString* label,
     NSCParameterAssert(label);
     SecIdentityRef ident = findIdentity(label, expirationInterval);
     if (!ident) {
-        Log(@"Generating new anonymous self-signed SSL identity labeled \"%@\"...", label);
+        NSLog(@"Generating new anonymous self-signed SSL identity labeled \"%@\"...", label);
         SecKeyRef publicKey, privateKey;
         if (!generateRSAKeyPair(kKeySizeInBits, YES, label, &publicKey, &privateKey, outError))
             return NULL;
@@ -158,13 +157,19 @@ static NSData* generateAnonymousCert(SecKeyRef publicKey, SecKeyRef privateKey,
 
     // Copy the public key:
     NSData* keyData = getPublicKeyData(publicKey);
-    AssertEq(keyData.length, kPublicKeyLength);
+    if (keyData.length != kPublicKeyLength) {
+        NSLog(@"ERROR: keyData.length != kPublicKeyLength");
+        return nil;
+    }
     memcpy(&buf[kPublicKeyOffset], keyData.bytes, kPublicKeyLength);
 
     // Sign the cert:
     NSData* csr = [data subdataWithRange: NSMakeRange(kCSROffset, kCSRLength)];
     NSData* sig = signData(privateKey, csr);
-    AssertEq(sig.length, kSignatureLength);
+    if (sig.length != kSignatureLength) {
+        NSLog(@"ERROR: sig.length != kSignatureLength");
+        return nil;
+    }
     [data appendData: sig];
 
     return data;
@@ -300,7 +305,7 @@ static SecIdentityRef findIdentity(NSString* label, NSTimeInterval expirationInt
         SecCertificateRef cert;
         if (SecIdentityCopyCertificate(identity, &cert) == noErr) {
             if (!checkCertValid(cert, expirationInterval)) {
-                Log(@"SSL identity labeled \"%@\" has expired", label);
+                NSLog(@"SSL identity labeled \"%@\" has expired", label);
                 identity = NULL;
                 MYDeleteAnonymousIdentity(label);
             }
@@ -396,73 +401,6 @@ BOOL MYDeleteAnonymousIdentity(NSString* label) {
 }
 
 
-
-
-#pragma mark - UNIT TESTS
-#if DEBUG
-
-TestCase(GenerateAnonymousCert) {
-    static NSString* const kLabel = @"MYAnonymousIdentity unit test";
-    SecKeyRef publicKey, privateKey;
-    NSError* error;
-    Assert(generateRSAKeyPair(kKeySizeInBits, TARGET_OS_IPHONE, kLabel,
-                              &publicKey, &privateKey, &error));
-    NSData* certData = generateAnonymousCert(publicKey, privateKey, 60*60*24, &error);
-    Assert(certData);
-
-    SecCertificateRef certRef;
-#if TARGET_OS_IPHONE
-    certRef = addCertToKeychain(certData, kLabel, NULL);
-#else
-    certRef = SecCertificateCreateWithData(NULL, (__bridge CFDataRef)certData);
-    CFAutorelease(certRef);
-#endif
-    Assert(certRef);
-    Assert(checkCertValid(certRef, 60*60*24));
-    [getPublicKeyData(publicKey) writeToFile: @"/tmp/publickey.der" atomically: NO];
-    [certData writeToFile: @"/tmp/generated.cer" atomically: NO];
-
-#if TARGET_OS_IPHONE
-    NSDictionary* keyAttrs = getItemAttributes(publicKey);
-    NSDictionary* certAttrs = getItemAttributes(certRef);
-    Log(@"Key attrs = %@", keyAttrs);
-    Log(@"Cert attrs = %@", certAttrs);
-    AssertEqual(certAttrs[(__bridge id)kSecAttrPublicKeyHash],
-                keyAttrs[(__bridge id)kSecAttrApplicationLabel]);
-    SecIdentityRef ident = findIdentity(kLabel, 60*60*24);
-    Assert(ident, @"Couldn't find identity");
-#endif
-
-    NSData* digest = MYGetCertificateDigest(certRef);
-    Log(@"Cert digest = %@", digest);
-    Assert(digest);
-}
-
-
-#if 0
-#import "MYCertificateRequest.h"
-// This function was used to generate the "generic.cer" resource file
-TestCase(CreateCertTemplate) {
-    MYPrivateKey *privateKey = [MYPrivateKey generateRSAKeyPairOfSize: 2048
-                                                                label: nil
-                                                       applicationTag: nil
-                                                                error: NULL];
-    MYCertificateRequest *pcert = [[MYCertificateRequest alloc] initWithPublicKey: privateKey.publicKey];
-    MYCertificateName *subject = pcert.subject;
-    subject.commonName = @"anon";
-    subject.nameDescription = @"An anonymous self-signed certificate";
-    subject.emailAddress = @"anon@example.com";
-    pcert.keyUsage = kKeyUsageDigitalSignature | kKeyUsageDataEncipherment | kKeyUsageKeyCertSign;
-    pcert.extendedKeyUsage = [NSSet setWithObjects: kExtendedKeyUsageServerAuthOID,kExtendedKeyUsageEmailProtectionOID, nil];
-    NSError *error;
-    NSData *certData = [pcert selfSignWithPrivateKey: privateKey error: &error];
-    [certData writeToFile: @"/tmp/generic.cer" atomically: NO];
-}
-#endif
-
-#endif //DEBUG
-
-
 // Original self-signed certificate created by Apple's Certificate Assistant app, saved as DER.
 // Hex dump created by:  hexdump -e '"\t" 16/1 "0x%02x, " "\n"' generic.cer
 // Also, data was truncated to remove the trailing 256 bytes of signature data,
@@ -505,22 +443,22 @@ static uint8_t const kCertTemplate[499] = {
 
 /*
  Copyright (c) 2014-15, Jens Alfke <jens@mooseyard.com>. All rights reserved.
- 
+
  Redistribution and use in source and binary forms, with or without modification, are permitted
  provided that the following conditions are met:
- 
+
  * Redistributions of source code must retain the above copyright notice, this list of conditions
  and the following disclaimer.
  * Redistributions in binary form must reproduce the above copyright notice, this list of conditions
  and the following disclaimer in the documentation and/or other materials provided with the
  distribution.
- 
+
  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
- IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRI-
  BUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
-  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF 
+ (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+  PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
  THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
