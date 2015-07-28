@@ -25,7 +25,7 @@ static uint8_t const kCertTemplate[519];
 #define kPublicKeyOffset    175
 #define kPublicKeyLength    270u
 #define kCSROffset            0
-#define kCSRLength          491u
+#define kCSRLength          514u
 #define kSignatureLength    256u
 
 
