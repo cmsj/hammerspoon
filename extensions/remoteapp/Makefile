@@ -39,5 +39,7 @@ install-lua: $(LUAFILE)
 clean:
 	rm -f $(SOFILE)
 	rm -f HammerspoonRemoteCertTemplate.h
+	rm -f cert.cer
+	rm -f cert.cer.asn1
 
 .PHONY: all clean
