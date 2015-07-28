@@ -18,7 +18,10 @@ DEBUG_CFLAGS = -g
 CFLAGS  += $(DEBUG_CFLAGS) -Wall -Wextra -I ../../Pods/Headers/Public -F../../ -framework LuaSkin -framework Fabric -framework MultipeerConnectivity $(EXTRA_CFLAGS)
 LDFLAGS += -dynamiclib -undefined dynamic_lookup $(EXTRA_LDFLAGS)
 
-all: $(SOFILE)
+all: $(SOFILE) HammerspoonRemoteCertTemplate.h
+
+HammerspoonRemoteCertTemplate.h:
+	./mkCertTemplate.sh
 
 $(SOFILE): $(OBJCFILE) $(HEADERS)
 	$(CC) $(OBJCFILE) $(CFLAGS) $(LDFLAGS) -o $@
