@@ -18,7 +18,7 @@ DEBUG_CFLAGS = -g
 CFLAGS  += $(DEBUG_CFLAGS) -Wall -Wextra -I ../../Pods/Headers/Public -F../../ -framework LuaSkin -framework Fabric -framework MultipeerConnectivity $(EXTRA_CFLAGS)
 LDFLAGS += -dynamiclib -undefined dynamic_lookup $(EXTRA_LDFLAGS)
 
-all: $(SOFILE) HammerspoonRemoteCertTemplate.h
+all: HammerspoonRemoteCertTemplate.h $(SOFILE)
 
 HammerspoonRemoteCertTemplate.h:
 	./mkCertTemplate.sh
@@ -38,5 +38,6 @@ install-lua: $(LUAFILE)
 
 clean:
 	rm -f $(SOFILE)
+	rm -f HammerspoonRemoteCertTemplate.h
 
 .PHONY: all clean

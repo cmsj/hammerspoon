@@ -1,12 +1,15 @@
 #!/bin/bash
 echo "== Generating a private key and using it to sign an x509:"
-#openssl req -x509 -newkey rsa:2048 -outform DER -out cert.cer -config openssl.conf -set_serial 106
+openssl req -x509 -newkey rsa:2048 -outform DER -out cert.cer -config openssl.conf -set_serial 106
+
 echo ""
+
 echo "== Dumping ASN.1 structure of cert.cer:"
 openssl asn1parse -inform DER -in cert.cer -dump -i >cert.cer.asn1
+
 echo ""
+
 echo "== Generating HammerspoonRemoteCertTemplate.h:"
-#hexdump -e '"\t" 16/1 "0x%02x, " "\n"' cert.cer
 INCLUDE_FILE="HammerspoonRemoteCertTemplate.h"
 
 # Clear out the include file
@@ -33,5 +36,7 @@ echo "" >>${INCLUDE_FILE}
 
 echo "=== Dumping template certificate bytes..."
 openssl x509 -C -inform DER -in cert.cer -noout | sed -n '/XXX_certificate/,$p' | sed -e 's/unsigned char XXX_certificate/static uint8_t const kCertTemplate/' >>${INCLUDE_FILE}
+
 echo ""
+
 echo "== Done"
