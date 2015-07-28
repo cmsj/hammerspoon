@@ -15,8 +15,28 @@ NSString *sessionStateToString(MCSessionState state) {
     }
 }
 
-NSString *SecIdentityRefFingerprint(SecIdentityRef identityRef) {
+NSString *SecCertificateRefFingerprint(SecCertificateRef certRef) {
     NSMutableString *output = [[NSMutableString alloc] init];
+    CFDataRef data = SecCertificateCopyData(certRef);
+
+    if (!data) {
+        NSLog(@"ERROR: Unable to find certificate data to fingerprint");
+    }
+    
+    unsigned char md5[CC_MD5_DIGEST_LENGTH+1];
+    CC_MD5(CFDataGetBytePtr(data), (CC_LONG)CFDataGetLength(data), md5);
+    md5[CC_MD5_DIGEST_LENGTH] = 0;
+
+    for (unsigned int i = 0; i < CC_MD5_DIGEST_LENGTH; i++) {
+        [output appendFormat:@"%02x", md5[i]];
+    }
+
+    CFRelease(data);
+    return (NSString *)output;
+}
+
+NSString *SecIdentityRefFingerprint(SecIdentityRef identityRef) {
+    NSString *output;
     SecCertificateRef certRef = nil;
 
     SecIdentityCopyCertificate(identityRef, &certRef);
@@ -24,18 +44,9 @@ NSString *SecIdentityRefFingerprint(SecIdentityRef identityRef) {
         NSLog(@"ERROR: Unable to find certificate to get fingerprint");
         return nil;
     }
-    CFDataRef data = SecCertificateCopyData(certRef);
 
-    unsigned char md5[CC_MD5_DIGEST_LENGTH+1];
-    CC_MD5(CFDataGetBytePtr(data), (CC_LONG)CFDataGetLength(data), md5);
-    md5[CC_MD5_DIGEST_LENGTH] = 0;
-
-    for (unsigned int i = 0; i < (unsigned int)CFDataGetLength(data); i++) {
-        [output appendFormat:@"%02x", md5[i]];
-    }
-
+    output = SecCertificateRefFingerprint(certRef);
     CFRelease(certRef);
-    CFRelease(data);
 
     return (NSString *)output;
 }
@@ -47,6 +58,7 @@ NSString *SecIdentityRefFingerprint(SecIdentityRef identityRef) {
 @property (nonatomic, strong) MCPeerID *peerID;
 @property (nonatomic, strong) MCSession *session;
 @property (nonatomic, strong) MCNearbyServiceAdvertiser *advertiser;
+@property (nonatomic, strong) NSString *certMD5;
 
 - (void)advertiseSelf:(BOOL)advertiser;
 
@@ -71,12 +83,14 @@ static HSRemoteHandler *remoteHandler;
         }
         NSLog(@"Created peer with name: %@ (%@)", self.peerID.displayName, self.peerID);
         NSError *certError;
-        peerCertificate = MYGetOrCreateAnonymousIdentity([NSString stringWithFormat:@"Hammerspoon Remote: %@", peerName], kMYAnonymousIdentityDefaultExpirationInterval, &certError);
+        // We're being optimistic about the longevity of Hammerspoon, so generate a 20 year certificate :)
+        peerCertificate = MYGetOrCreateAnonymousIdentity([NSString stringWithFormat:@"Hammerspoon Remote: %@", peerName], 20 * kMYAnonymousIdentityDefaultExpirationInterval, &certError);
         if (!peerCertificate) {
             NSLog(@"ERROR: Unable to find/generate a certificate: %@", certError);
             return nil;
         }
-        NSLog(@"Generated/found my cert with fingerprint: %@", SecIdentityRefFingerprint(peerCertificate));
+        self.certMD5 = SecIdentityRefFingerprint(peerCertificate);
+        NSLog(@"Generated/found my cert with fingerprint: %@", self.certMD5);
         self.session = [[MCSession alloc] initWithPeer:self.peerID securityIdentity:@[(__bridge id)peerCertificate] encryptionPreference:MCEncryptionRequired];
         self.session.delegate = self;
     }
@@ -126,11 +140,26 @@ static HSRemoteHandler *remoteHandler;
         return;
     }
 
-    SecIdentityRef identityRef = (__bridge SecIdentityRef)[certificate objectAtIndex:0];
+    SecCertificateRef certRef = (__bridge SecCertificateRef)[certificate objectAtIndex:0];
 
-    NSLog(@"Found a MD5 of: %@", SecIdentityRefFingerprint(identityRef));
-    // FIXME: Have the user verify
-    certificateHandler(YES);
+    NSString *certMD5 = SecCertificateRefFingerprint(certRef);
+    NSLog(@"Found a MD5 of: %@", certMD5);
+
+    NSAlert *alert = [[NSAlert alloc] init];
+    alert.alertStyle = NSWarningAlertStyle;
+    alert.messageText = @"Hammerspoon Remote pairing request";
+    alert.informativeText = [NSString stringWithFormat:@"%@ would like to connect.\nPlease confirm the certificate fingerprints are the same on both devices:\n%@\n%@", peerID.displayName, certMD5, self.certMD5];
+
+    [alert addButtonWithTitle:@"Pair"];
+    [alert addButtonWithTitle:@"Cancel"];
+
+    if ([alert runModal] == NSAlertFirstButtonReturn) {
+        NSLog(@"User accepted invitation");
+        certificateHandler(YES);
+    } else {
+        NSLog(@"User declined invitation");
+        certificateHandler(NO);
+    }
 }
 
 #pragma mark - MCNearbyServiceAdvertiserDelegate protocol
@@ -144,22 +173,8 @@ didNotStartAdvertisingPeer:(NSError *)error {
                                                                             withContext:(NSData *)context
                                                                       invitationHandler:(void (^)(BOOL accept,
                                                                                                   MCSession *session))invitationHandler {
-    NSLog(@"Got a peer request");
-    NSString *pin = [[NSString alloc] initWithData:context encoding:NSUTF8StringEncoding];
-    NSAlert *alert = [[NSAlert alloc] init];
-
-    alert.alertStyle = NSWarningAlertStyle;
-    alert.messageText = @"Hammerspoon Remote pairing request";
-    alert.informativeText = [NSString stringWithFormat:@"%@ would like to connect.\nPlease confirm the Hammerspoon Remote app is showing PIN: %@", peerID.displayName, pin];
-    [alert addButtonWithTitle:@"Pair"];
-    [alert addButtonWithTitle:@"Cancel"];
-    if ([alert runModal] == NSAlertFirstButtonReturn) {
-        NSLog(@"User accepted invitation");
-        invitationHandler(YES, self.session);
-    } else {
-        NSLog(@"User declined invitation");
-        invitationHandler(NO, self.session);
-    }
+    NSLog(@"didReceiveInvitationFromPeer");
+    invitationHandler(YES, self.session);
 }
 @end
 
