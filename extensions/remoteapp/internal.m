@@ -71,7 +71,11 @@ static HSRemoteHandler *remoteHandler;
         }
         NSLog(@"Created peer with name: %@ (%@)", self.peerID.displayName, self.peerID);
         NSError *certError;
-        peerCertificate = MYGetOrCreateAnonymousIdentity([NSString stringWithFormat:@"Hammerspoon Remote: peerName"], kMYAnonymousIdentityDefaultExpirationInterval, &certError);
+        peerCertificate = MYGetOrCreateAnonymousIdentity([NSString stringWithFormat:@"Hammerspoon Remote: %@", peerName], kMYAnonymousIdentityDefaultExpirationInterval, &certError);
+        if (!peerCertificate) {
+            NSLog(@"ERROR: Unable to find/generate a certificate");
+            return nil;
+        }
         NSLog(@"Generated/found my cert with fingerprint: %@", SecIdentityRefFingerprint(peerCertificate));
         self.session = [[MCSession alloc] initWithPeer:self.peerID securityIdentity:@[(__bridge id)peerCertificate] encryptionPreference:MCEncryptionRequired];
         self.session.delegate = self;
