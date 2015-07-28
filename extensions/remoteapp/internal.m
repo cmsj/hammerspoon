@@ -17,9 +17,13 @@ NSString *sessionStateToString(MCSessionState state) {
 
 NSString *SecIdentityRefFingerprint(SecIdentityRef identityRef) {
     NSMutableString *output = [[NSMutableString alloc] init];
-    SecCertificateRef certRef;
+    SecCertificateRef certRef = nil;
 
     SecIdentityCopyCertificate(identityRef, &certRef);
+    if (!certRef) {
+        NSLog(@"ERROR: Unable to find certificate to get fingerprint");
+        return nil;
+    }
     CFDataRef data = SecCertificateCopyData(certRef);
 
     unsigned char md5[CC_MD5_DIGEST_LENGTH+1];
@@ -67,7 +71,7 @@ static HSRemoteHandler *remoteHandler;
         }
         NSLog(@"Created peer with name: %@ (%@)", self.peerID.displayName, self.peerID);
         NSError *certError;
-        peerCertificate = MYGetOrCreateAnonymousIdentity(peerName, kMYAnonymousIdentityDefaultExpirationInterval, &certError);
+        peerCertificate = MYGetOrCreateAnonymousIdentity([NSString stringWithFormat:@"Hammerspoon Remote: peerName"], kMYAnonymousIdentityDefaultExpirationInterval, &certError);
         NSLog(@"Generated/found my cert with fingerprint: %@", SecIdentityRefFingerprint(peerCertificate));
         self.session = [[MCSession alloc] initWithPeer:self.peerID securityIdentity:@[(__bridge id)peerCertificate] encryptionPreference:MCEncryptionRequired];
         self.session.delegate = self;
