@@ -4,7 +4,7 @@ current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 MODULE = $(current_dir)
 
 PREFIX  ?= .
-OBJCFILE = internal.m snej/CollectionUtils.m snej/Logging.m snej/MYASN1Object.m snej/MYBERParser.m snej/MYCertificateInfo.m snej/MYDEREncoder.m snej/MYDigest.m snej/MYErrorUtils.m snej/MYKey.m snej/MYOID.m snej/MYPrivateKey.m snej/Test.m snej/Test_Assertions.m snej/MYCertificate.m snej/MYKeychainItem.m snej/MyPublicKey.m snej/MyKeychain.m snej/MySymmetricKey.m snej/MYIdentity.m snej/MYCryptor.m
+OBJCFILE = internal.m CollectionUtils.m Logging.m Test.M MYAnonymousIdentity.m
 LUAFILE  = init.lua
 SOFILE  := $(OBJCFILE:m=so)
 

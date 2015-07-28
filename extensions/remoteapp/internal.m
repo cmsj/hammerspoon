@@ -4,7 +4,7 @@
 #import <Security/Security.h>
 #import <LuaSkin/LuaSkin.h>
 #import "../hammerspoon.h"
-#import "snej/MYAnonymousIdentity.h"
+#import "MYAnonymousIdentity.h"
 
 NSString *sessionStateToString(MCSessionState state) {
     switch (state) {
