@@ -10,7 +10,7 @@ NSString *sessionStateToString(MCSessionState state) {
     switch (state) {
         case MCSessionStateNotConnected: return @"Not Connected";
         case MCSessionStateConnecting: return @"Connecting";
-        case MCSessionStateConnected: return @"Connected"; 
+        case MCSessionStateConnected: return @"Connected";
         default: return @"Unknown";
     }
 }
@@ -90,28 +90,28 @@ static HSRemoteHandler *remoteHandler;
 
 #pragma mark - MCSessionDelegate protocol
 
-- (void)session:(MCSession *)session peer:(MCPeerID *)peerID didChangeState:(MCSessionState)state {
-    NSLog(@"didChangeState: %@", sessionStateToString(state));
+- (void)session:(MCSession * __unused)session peer:(MCPeerID *)peerID didChangeState:(MCSessionState)state {
+    NSLog(@"didChangeState: %@ (%@)", sessionStateToString(state), peerID.displayName);
 }
 
-- (void)session:(MCSession *)session didReceiveData:(NSData *)data fromPeer:(MCPeerID *)peerID {
-    NSLog(@"didReceiveData");
+- (void)session:(MCSession * __unused)session didReceiveData:(NSData * __unused)data fromPeer:(MCPeerID *)peerID {
+    NSLog(@"didReceiveData (%@)", peerID.displayName);
 }
 
-- (void)session:(MCSession *)session didStartReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID withProgress:(NSProgress *)progress {
-    NSLog(@"didStartReceivingResourceWithName");
+- (void)session:(MCSession * __unused)session didStartReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID withProgress:(NSProgress * __unused)progress {
+    NSLog(@"didStartReceivingResourceWithName %@ (%@)", resourceName, peerID.displayName);
 }
 
-- (void)session:(MCSession *)session didFinishReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID atURL:(NSURL *)localURL withError:(NSError *)error {
-    NSLog(@"didFinishReceivingResourceWithName");
+- (void)session:(MCSession * __unused)session didFinishReceivingResourceWithName:(NSString *)resourceName fromPeer:(MCPeerID *)peerID atURL:(NSURL * __unused)localURL withError:(NSError * __unused)error {
+    NSLog(@"didFinishReceivingResourceWithName %@ (%@)", resourceName, peerID.displayName);
 }
 
-- (void)session:(MCSession *)session didReceiveStream:(NSInputStream *)stream withName:(NSString *)streamName fromPeer:(MCPeerID *)peerID {
-    NSLog(@"didReceiveStream");
+- (void)session:(MCSession * __unused)session didReceiveStream:(NSInputStream * __unused)stream withName:(NSString *)streamName fromPeer:(MCPeerID *)peerID {
+    NSLog(@"didReceiveStream %@ (%@)", streamName, peerID.displayName);
 }
 
-- (void)session:(MCSession *)session didReceiveCertificate:(NSArray *)certificate fromPeer:(MCPeerID *)peerID certificateHandler:(void (^)(BOOL accept))certificateHandler {
-    NSLog(@"didReceiveCertificate");
+- (void)session:(MCSession * __unused)session didReceiveCertificate:(NSArray *)certificate fromPeer:(MCPeerID *)peerID certificateHandler:(void (^)(BOOL accept))certificateHandler {
+    NSLog(@"didReceiveCertificate (%@)", peerID.displayName);
     if (!certificate) {
         NSLog(@"No certificate received. Refusing to pair");
         certificateHandler(NO);
@@ -127,12 +127,12 @@ static HSRemoteHandler *remoteHandler;
 
 #pragma mark - MCNearbyServiceAdvertiserDelegate protocol
 
-- (void)advertiser:(MCNearbyServiceAdvertiser *)advertiser
+- (void)advertiser:(MCNearbyServiceAdvertiser * __unused)advertiser
 didNotStartAdvertisingPeer:(NSError *)error {
              NSLog(@"ERROR: Failed to start advertising: %@", error);
 }
 
-- (void)advertiser:(MCNearbyServiceAdvertiser *)advertiser didReceiveInvitationFromPeer:(MCPeerID *)peerID
+- (void)advertiser:(MCNearbyServiceAdvertiser * __unused)advertiser didReceiveInvitationFromPeer:(MCPeerID *)peerID
                                                                             withContext:(NSData *)context
                                                                       invitationHandler:(void (^)(BOOL accept,
                                                                                                   MCSession *session))invitationHandler {
@@ -164,7 +164,7 @@ didNotStartAdvertisingPeer:(NSError *)error {
 ///
 /// Returns:
 ///  * None
-static int remoteapp_start(lua_State *L) {
+static int remoteapp_start(lua_State *L __unused) {
     [remoteHandler advertiseSelf:YES];
     return 0;
 }
@@ -178,7 +178,7 @@ static int remoteapp_start(lua_State *L) {
 ///
 /// Returns:
 ///  * None
-static int remoteapp_stop(lua_State *L) {
+static int remoteapp_stop(lua_State *L __unused) {
     [remoteHandler advertiseSelf:NO];
     [remoteHandler.session disconnect];
     return 0;
