@@ -342,26 +342,6 @@ static NSDictionary* getItemAttributes(CFTypeRef cert) {
 #endif
 
 
-#if 0 // Disabling this because I can't find a good way to get a cert's key digest on iOS.
-NSData* MYGetCertificatePublicKeyDigest(SecCertificateRef cert) {
-#if TARGET_OS_IPHONE
-    //FIX: Unfortunately this doesn't work: the SecItem___ API only operates on items that are
-    // in the Keychain already, so it fails with errSecItemNotFound on this cert.
-    return getItemAttributes(cert)[(__bridge id)kSecAttrPublicKeyHash];
-#else
-    SecKeyRef publicKey;
-    if (SecCertificateCopyPublicKey(cert, &publicKey) != noErr)
-        return nil;
-    NSData* keyData = getPublicKeyData(publicKey);
-    CFRelease(publicKey);
-    uint8_t digest[CC_SHA1_DIGEST_LENGTH];
-    CC_SHA1(keyData.bytes, (CC_LONG)keyData.length, digest);
-    return [NSData dataWithBytes: digest length: sizeof(digest)];
-#endif
-}
-#endif // 0
-
-
 #if !TARGET_OS_IPHONE
 static double relativeTimeFromOID(NSDictionary* values, CFTypeRef oid) {
     NSNumber* dateNum = values[(__bridge id)oid][@"value"];
