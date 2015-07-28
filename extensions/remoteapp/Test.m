@@ -38,7 +38,7 @@ static BOOL CheckUncalledCoverage(void);
 static void TestCaseExceptionReporter( NSException *x ) {
     sCurTestCaseExceptions++;
     fflush(stderr);
-    Log(@"XXX FAILED test case -- backtrace:\n%@\n\n", x.my_callStack);
+    NSLog(@"XXX FAILED test case -- backtrace:\n%@\n\n", x.my_callStack);
 }
 
 static void ReportTestCase(struct TestCaseLink *test, NSString* failureType, NSString* failureMessage) {
@@ -92,7 +92,7 @@ static BOOL RunTestCase( struct TestCaseLink *test )
     NSAutoreleasePool *pool = [NSAutoreleasePool new];
     NSMutableArray* savedAfterTestBlocks = sAfterTestBlocks;
     sAfterTestBlocks = [NSMutableArray array];
-    Log(@"=== Testing %s ...",test->name);
+    NSLog(@"=== Testing %s ...",test->name);
     @try{
         sCurTestCaseExceptions = 0;
         MYSetExceptionReporter(&TestCaseExceptionReporter);
@@ -106,30 +106,30 @@ static BOOL RunTestCase( struct TestCaseLink *test )
             block();
 
         if (!CheckCoverage(test->name)) {
-            Log(@"XXX FAILED test case '%s' due to coverage failures", test->name);
+            NSLog(@"XXX FAILED test case '%s' due to coverage failures", test->name);
             sFailed++;
             RecordFailedTest(test);
             ReportTestCase(test, @"coverage", nil);
         } else if( sCurTestCaseExceptions > 0 ) {
-            Log(@"XXX FAILED test case '%s' due to %i exception(s) already reported above",
+            NSLog(@"XXX FAILED test case '%s' due to %i exception(s) already reported above",
                 test->name,sCurTestCaseExceptions);
             sFailed++;
             RecordFailedTest(test);
             ReportTestCase(test, @"exception", $sprintf(@"%d exception(s) already caught",
                                                         sCurTestCaseExceptions));
         } else {
-            Log(@"√√√ %s passed\n\n",test->name);
+            NSLog(@"√√√ %s passed\n\n",test->name);
             test->passed = YES;
             sPassed++;
             ReportTestCase(test, nil, nil);
         }
     }@catch( NSException *x ) {
         if( [x.name isEqualToString: @"TestCaseSkipped"] ) {
-            Log(@"... skipping test %s since %@\n\n", test->name, x.reason);
+            NSLog(@"... skipping test %s since %@\n\n", test->name, x.reason);
             ReportTestCase(test, @"skipped", x.reason);
         } else {
             fflush(stderr);
-            Log(@"XXX FAILED test case '%s' due to:\nException: %@\n%@\n\n", 
+            NSLog(@"XXX FAILED test case '%s' due to:\nException: %@\n%@\n\n", 
                   test->name,x,x.my_callStack);
             sFailed++;
             RecordFailedTest(test);
@@ -164,7 +164,7 @@ static struct TestCaseLink* FindTestCaseNamed( const char *name ) {
     for( struct TestCaseLink *test = gAllTestCases; test; test=test->next )
         if( strcmp(name,test->name)==0 )
             return test;
-    Log(@"... WARNING: Could not find test case named '%s'\n\n",name);
+    NSLog(@"... WARNING: Could not find test case named '%s'\n\n",name);
     return NULL;
 }
 
@@ -185,7 +185,7 @@ void _RequireTestCase( const char *name )
         [NSException raise: @"TestCaseSkipped" 
                     format: @"prerequisite %s failed", name];
     }
-    Log(@"=== Back to test %s ...", sCurrentTest->name);
+    NSLog(@"=== Back to test %s ...", sCurrentTest->name);
 }
 
 
@@ -240,19 +240,19 @@ void RunTestCases( int argc, const char **argv )
 #if XML_REPORT
             WriteReport(@"test_report.xml");
 #else
-            Warn(@"Write_Report option is not supported on this platform");
+            NSLog(@"Write_Report option is not supported on this platform");
 #endif
         }
         if( sFailed==0 )
-            AlwaysLog(@"√√√√√√ ALL %i TESTS PASSED √√√√√√", sPassed);
+            NSLog(@"√√√√√√ ALL %i TESTS PASSED √√√√√√", sPassed);
         else {
-            Warn(@"****** %i of %i TESTS FAILED: %@ ******", 
+            NSLog(@"****** %i of %i TESTS FAILED: %@ ******", 
                  sFailed, sPassed+sFailed,
                  [sFailedTestNames componentsJoinedByString: @", "]);
             exit(1);
         }
         if( stopAfterTests ) {
-            Log(@"Stopping after tests ('Test_Only' arg detected)");
+            NSLog(@"Stopping after tests ('Test_Only' arg detected)");
             exit(0);
         }
         [pool drain];
@@ -307,7 +307,7 @@ static BOOL CheckCoverage(const char* testName) {
     for (NSArray* key in cases) {
         int results = [cases[key] intValue];
         if (results == 1 || results == 2) {
-            Warn(@"Coverage: At %@:%d, only saw (%@) == %s",
+            NSLog(@"Coverage: At %@:%d, only saw (%@) == %s",
                  key[0], [key[1] intValue], key[2], (results==2 ?"YES" : "NO"));
             ok = NO;
         }
@@ -318,7 +318,7 @@ static BOOL CheckCoverage(const char* testName) {
 static BOOL CheckUncalledCoverage(void) {
     if (sCoverageByTest.count == 0)
         return YES;
-    Log(@"=== Checking for unreached Cover() calls [UncalledCoverage] ...");
+    NSLog(@"=== Checking for unreached Cover() calls [UncalledCoverage] ...");
 
     int failures = 0;
     for (NSString* testName in sCoverageByTest) {
@@ -326,7 +326,7 @@ static BOOL CheckUncalledCoverage(void) {
             NSDictionary* cases = sCoverageByTest[testName];
             for (NSArray* key in cases) {
                 if ([cases[key] intValue] == 0) {
-                    Warn(@"Coverage: %@:%d, Cover(%@) unreached by test case %@",
+                    NSLog(@"Coverage: %@:%d, Cover(%@) unreached by test case %@",
                          key[0], [key[1] intValue], key[2], testName);
                     failures++;
                 }
@@ -336,13 +336,13 @@ static BOOL CheckUncalledCoverage(void) {
 
     struct TestCaseLink testCase = {NULL, "UncalledCoverage"};
     if (failures == 0) {
-        Log(@"√√√ All reached Cover() calls were reached during their test case\n\n");
+        NSLog(@"√√√ All reached Cover() calls were reached during their test case\n\n");
         sPassed++;
         ReportTestCase(&testCase, nil, nil);
         return YES;
     } else {
         NSString* message = $sprintf(@"%d Cover() calls were reached, but not during their test case", failures);
-        Log(@"XXX %@\n\n", message);
+        NSLog(@"XXX %@\n\n", message);
         sFailed++;
         RecordFailedTest(&testCase);
         ReportTestCase(&testCase, @"coverage", message);

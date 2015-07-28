@@ -7,7 +7,6 @@
 
 #import "MYAnonymousIdentity.h"
 #import "CollectionUtils.h"
-#import "Logging.h"
 #import "Test.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <Security/Security.h>
@@ -201,7 +200,7 @@ static void removePublicKey(SecKeyRef publicKey) {
     NSDictionary* query = @{(__bridge id)kSecValueRef: (__bridge id)publicKey};
     OSStatus err = SecItemDelete((__bridge CFDictionaryRef)query);
     if (err)
-        Warn(@"Couldn't delete public key: err %d", (int)err);
+        NSLog(@"Couldn't delete public key: err %d", (int)err);
 }
 #endif
 
@@ -218,7 +217,7 @@ static NSData* signData(SecKeyRef privateKey, NSData* inputData) {
                                  digest, sizeof(digest),
                                  sigBuf, &sigLen);
     if(err) {
-        Warn(@"SecKeyRawSign failed: %ld", (long)err);
+        NSLog(@"SecKeyRawSign failed: %ld", (long)err);
         return nil;
     }
     return [NSData dataWithBytes: sigBuf length: sigLen];
@@ -392,7 +391,7 @@ BOOL MYDeleteAnonymousIdentity(NSString* label) {
                                 {(__bridge id)kSecAttrLabel, label});
     OSStatus err = SecItemDelete((__bridge CFDictionaryRef)attrs);
     if (err != noErr && err != errSecItemNotFound)
-        Warn(@"Unexpected error %d deleting identity from keychain", (int)err);
+        NSLog(@"Unexpected error %d deleting identity from keychain", (int)err);
     return (err == noErr);
 }
 

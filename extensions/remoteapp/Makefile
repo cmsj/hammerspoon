@@ -4,7 +4,7 @@ current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 MODULE = $(current_dir)
 
 PREFIX  ?= .
-OBJCFILE = internal.m CollectionUtils.m Logging.m Test.m MYAnonymousIdentity.m
+OBJCFILE = internal.m CollectionUtils.m Test.m MYAnonymousIdentity.m
 LUAFILE  = init.lua
 SOFILE  := $(OBJCFILE:m=so)
 

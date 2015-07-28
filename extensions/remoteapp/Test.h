@@ -8,7 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import "CollectionUtils.h"
-#import "Logging.h"
 
 
 #ifndef MY_ENABLE_TESTS
