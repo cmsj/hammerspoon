@@ -6,7 +6,7 @@ MODULE = $(current_dir)
 PREFIX  ?= .
 OBJCFILE = internal.m MYAnonymousIdentity.m
 LUAFILE  = init.lua
-SOFILE  := $(OBJCFILE:m=so)
+SOFILE  := internal.so
 
 CC?=cc
 EXTRA_CFLAGS ?= -fobjc-arc
@@ -21,7 +21,7 @@ LDFLAGS += -dynamiclib -undefined dynamic_lookup $(EXTRA_LDFLAGS)
 all: $(SOFILE)
 
 $(SOFILE): $(OBJCFILE) $(HEADERS)
-	$(CC) $(@:so=m) $(CFLAGS) $(LDFLAGS) -o $@
+	$(CC) $(OBJCFILE) $(CFLAGS) $(LDFLAGS) -o $@
 
 install: install-objc install-lua
 
