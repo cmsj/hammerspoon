@@ -1,3 +1,5 @@
 cert.cer
 HammerspoonRemoteCertTemplate.h
 cert.cer.asn1
+internal.so
+internal.dSYM
