@@ -50,7 +50,7 @@
     __block NSMutableDictionary *responseHeaders = nil;
     __block NSString *responseBody = nil;
 
-    void (^block)(void) = ^{
+    void (^responseCallbackBlock)(void) = ^{
         LuaSkin *skin = [LuaSkin shared];
         lua_State *L = skin.L;
 
@@ -94,9 +94,9 @@
 
     // Make sure we do all the above Lua work on the main thread
     if ([NSThread isMainThread]) {
-        block();
+        resposneCallbackBlock();
     } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
+        dispatch_sync(dispatch_get_main_queue(), responseCallbackBlock);
     }
 
     HSHTTPDataResponse *response = [[HSHTTPDataResponse alloc] initWithData:[responseBody dataUsingEncoding:NSUTF8StringEncoding]];
