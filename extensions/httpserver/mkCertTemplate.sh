@@ -9,8 +9,8 @@ openssl asn1parse -inform DER -in cert.cer -dump -i >cert.cer.asn1
 
 echo ""
 
-echo "== Generating HammerspoonRemoteCertTemplate.h:"
-INCLUDE_FILE="HammerspoonRemoteCertTemplate.h"
+echo "== Generating HammerspoonCertTemplate.h:"
+INCLUDE_FILE="HammerspoonCertTemplate.h"
 
 # Clear out the include file
 > ${INCLUDE_FILE}

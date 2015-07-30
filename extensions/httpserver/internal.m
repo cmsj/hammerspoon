@@ -3,6 +3,8 @@
 #import <CocoaHTTPServer/HTTPServer.h>
 #import <CocoaHTTPServer/HTTPConnection.h>
 #import <CocoaHTTPServer/HTTPDataResponse.h>
+#import <CocoaAsyncSocket/GCDAsyncSocket.h>
+#import "MYAnonymousIdentity.h"
 
 // Defines
 
@@ -13,6 +15,7 @@
 // ObjC Class definitions
 @interface HSHTTPServer : HTTPServer
 @property int fn;
+@property SecIdentityRef sslIdentity;
 @end
 
 @interface HSHTTPDataResponse : HTTPDataResponse
@@ -21,6 +24,9 @@
 @end
 
 @interface HSHTTPConnection : HTTPConnection
+@end
+
+@interface HSHTTPSConnection : HSHTTPConnection
 @end
 
 // ObjC Class implementations
@@ -94,7 +100,7 @@
 
     // Make sure we do all the above Lua work on the main thread
     if ([NSThread isMainThread]) {
-        resposneCallbackBlock();
+        responseCallbackBlock();
     } else {
         dispatch_sync(dispatch_get_main_queue(), responseCallbackBlock);
     }
@@ -108,25 +114,96 @@
 
 @end
 
+@implementation HSHTTPSConnection
+- (BOOL)isSecureServer {
+    return YES;
+}
+
+- (NSArray *)sslIdentityAndCertificates {
+    NSArray *chain;
+    NSError *certError;
+    SecIdentityRef identity = MYGetOrCreateAnonymousIdentity(@"Hammerspoon HTTP Server", 20 * kMYAnonymousIdentityDefaultExpirationInterval, &certError);
+    if (!identity) {
+        NSLog(@"ERROR: Unable to find/generate a certificate: %@", certError);
+        return nil;
+    }
+
+    ((HSHTTPServer *)config.server).sslIdentity = identity;
+    chain = [NSArray arrayWithObject:(__bridge id)identity];
+    return chain;
+}
+
+// We're overriding this because CocoaHTTPServer seems to have not been updated for deprecated APIs
+- (void)startConnection
+{
+    // Override me to do any custom work before the connection starts.
+    // 
+    // Be sure to invoke [super startConnection] when you're done.
+
+    //HTTPLogTrace();
+
+    if ([self isSecureServer])
+    {
+        // We are configured to be an HTTPS server.
+        // That is, we secure via SSL/TLS the connection prior to any communication.
+
+        NSArray *certificates = [self sslIdentityAndCertificates];
+
+        if ([certificates count] > 0)
+        {
+            // All connections are assumed to be secure. Only secure connections are allowed on this server.
+            NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithCapacity:3];
+
+            // Configure this connection as the server
+            [settings setObject:[NSNumber numberWithBool:YES]
+                         forKey:(NSString *)kCFStreamSSLIsServer];
+
+            [settings setObject:certificates
+                         forKey:(NSString *)kCFStreamSSLCertificates];
+
+            // Configure this connection to use the highest possible SSL level
+            [settings setObject:[NSNumber numberWithInteger:2] forKey:GCDAsyncSocketSSLProtocolVersionMin];
+            [settings setObject:[NSNumber numberWithInteger:2] forKey:GCDAsyncSocketSSLProtocolVersionMax];
+
+            [asyncSocket startTLS:settings];
+        }
+    }
+
+    [(HTTPConnection *)self performSelector:@selector(startReadingRequest)];
+}
+@end
+
 typedef struct _httpserver_t {
     void *server;
 } httpserver_t;
 
-/// hs.httpserver.new() -> object
+/// hs.httpserver.new([ssl]) -> object
 /// Function
-/// Creates a new HTTP server
+/// Creates a new HTTP or HTTPS server
 ///
 /// Parameters:
-///  * None
+///  * ssl - An optional boolean. If true, the server will start using HTTPS. Defaults to false.
 ///
 /// Returns:
 ///  * An `hs.httpserver` object
+///
+/// Notes:
+///  * Currently, in HTTPS mode, the server will use a self-signed certificate, which will cause warnings. If you want/need to be able to use `hs.httpserver` with a certificate signed by a trusted Certificate Authority, please file an bug on Hammerspoon requesting support for this.
 static int httpserver_new(lua_State *L) {
+    BOOL useSSL = false;
     httpserver_t *httpServer = lua_newuserdata(L, sizeof(httpserver_t));
     memset(httpServer, 0, sizeof(httpserver_t));
 
     HSHTTPServer *server = [[HSHTTPServer alloc] init];
-    [server setConnectionClass:[HSHTTPConnection class]];
+    if (lua_type(L, 1) == LUA_TBOOLEAN) {
+        useSSL = lua_toboolean(L, 1);
+    }
+
+    if (useSSL) {
+        [server setConnectionClass:[HSHTTPSConnection class]];
+    } else {
+        [server setConnectionClass:[HSHTTPConnection class]];
+    }
     [server setType:@"_http._tcp."];
 
     server.fn = LUA_NOREF;

@@ -6,7 +6,7 @@
 //
 
 #import "MYAnonymousIdentity.h"
-#import "HammerspoonRemoteCertTemplate.h"
+#import "HammerspoonCertTemplate.h"
 #import <CommonCrypto/CommonDigest.h>
 #import <Security/Security.h>
 
