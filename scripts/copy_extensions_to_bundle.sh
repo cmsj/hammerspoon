@@ -40,6 +40,7 @@ export HS_MODULES="alert \
     settings \
     sound \
     speech \
+    spotlight \
     styledtext \
     task \
     timer \

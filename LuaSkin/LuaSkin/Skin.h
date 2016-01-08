@@ -270,6 +270,14 @@ typedef id (*luaObjectHelperFunction)(lua_State *L, int idx);
 - (int)registerLibraryWithObject:(char *)libraryName functions:(const luaL_Reg *)functions metaFunctions:(const luaL_Reg *)metaFunctions objectFunctions:(const luaL_Reg *)objectFunctions;
 
 /*!
+ @abstract Pushes a dictionary of constants into a registered library
+ @important This must be called immediately after one of the registerLibrary methods - it depends on the library being top of the Lua stack
+ @param tableName - A C string containing the name of the table. It will be registered as hs.LIBRARYNAME.tableName
+ @param constants - A dictionary that will be converted to Lua types and turned into a table of constants in the library
+ */
+- (void)registerLibraryConstantsTable:(char *)tableName constants:(NSDictionary *)constants;
+
+/*!
  @abstract Defines a Lua object with methods
  @discussion Here is some sample code:
  <pre>@textblock

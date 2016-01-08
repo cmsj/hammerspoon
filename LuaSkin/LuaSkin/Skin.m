@@ -179,6 +179,17 @@ NSMutableDictionary *registeredLuaObjectHelperUserdataMappings;
     return moduleRefTable;
 }
 
+- (void)registerLibraryConstantsTable:(char *)tableName constants:(NSDictionary *)constants {
+    lua_newtable(_L);
+
+    for (NSString *key in constants) {
+        [self pushNSObject:[constants objectForKey:key]];
+        lua_setfield(_L, -2, [key UTF8String]);
+    }
+
+    lua_setfield(_L, -2, tableName);
+}
+
 - (void)registerObject:(char *)objectName objectFunctions:(const luaL_Reg *)objectFunctions {
     NSAssert(objectName != NULL, @"objectName can not be NULL", nil);
     NSAssert(objectFunctions != NULL, @"objectFunctions can not be NULL (%s)", objectName);
