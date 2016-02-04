@@ -36,6 +36,8 @@ function testGetCurrentInput()
 end
 
 function testGetAllDevices()
+  local foo = hs.audiodevice.allDevices()
+  print(hs.inspect(foo))
   assertTableNotEmpty(hs.audiodevice.allDevices())
   return success()
 end
