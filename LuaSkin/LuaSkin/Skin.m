@@ -67,13 +67,13 @@ NSString *specMaskToString(int spec) {
 // Extension to LuaSkin class to allow private modification of the lua_State property
 @interface LuaSkin ()
 
-@property (readwrite, assign, atomic) lua_State *L;
-@property (readonly, atomic)  NSMutableDictionary *registeredNSHelperFunctions ;
-@property (readonly, atomic)  NSMutableDictionary *registeredNSHelperLocations ;
-@property (readonly, atomic)  NSMutableDictionary *registeredLuaObjectHelperFunctions ;
-@property (readonly, atomic)  NSMutableDictionary *registeredLuaObjectHelperLocations ;
-@property (readonly, atomic)  NSMutableDictionary *registeredLuaObjectHelperUserdataMappings;
-@property (readonly, atomic)  NSMutableDictionary *registeredLuaObjectHelperTableMappings;
+//@property (readwrite, assign, atomic) lua_State *L;
+@property (readwrite, atomic)  NSMutableDictionary *registeredNSHelperFunctions ;
+@property (readwrite, atomic)  NSMutableDictionary *registeredNSHelperLocations ;
+@property (readwrite, atomic)  NSMutableDictionary *registeredLuaObjectHelperFunctions ;
+@property (readwrite, atomic)  NSMutableDictionary *registeredLuaObjectHelperLocations ;
+@property (readwrite, atomic)  NSMutableDictionary *registeredLuaObjectHelperUserdataMappings;
+@property (readwrite, atomic)  NSMutableDictionary *registeredLuaObjectHelperTableMappings;
 
 @end
 
@@ -122,13 +122,13 @@ NSString *specMaskToString(int spec) {
 - (id)init {
     self = [super init];
     if (self) {
-        _L = NULL;
-        _registeredNSHelperFunctions               = [[NSMutableDictionary alloc] init] ;
-        _registeredNSHelperLocations               = [[NSMutableDictionary alloc] init] ;
-        _registeredLuaObjectHelperFunctions        = [[NSMutableDictionary alloc] init] ;
-        _registeredLuaObjectHelperLocations        = [[NSMutableDictionary alloc] init] ;
-        _registeredLuaObjectHelperUserdataMappings = [[NSMutableDictionary alloc] init];
-        _registeredLuaObjectHelperTableMappings    = [[NSMutableDictionary alloc] init];
+        self.L = NULL;
+        self.registeredNSHelperFunctions               = [[NSMutableDictionary alloc] init] ;
+        self.registeredNSHelperLocations               = [[NSMutableDictionary alloc] init] ;
+        self.registeredLuaObjectHelperFunctions        = [[NSMutableDictionary alloc] init] ;
+        self.registeredLuaObjectHelperLocations        = [[NSMutableDictionary alloc] init] ;
+        self.registeredLuaObjectHelperUserdataMappings = [[NSMutableDictionary alloc] init];
+        self.registeredLuaObjectHelperTableMappings    = [[NSMutableDictionary alloc] init];
         [self createLuaState];
     }
     return self;

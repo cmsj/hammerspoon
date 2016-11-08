@@ -1032,6 +1032,76 @@ static int application_launchorfocusbybundleID(lua_State* L) {
     return 1;
 }
 
+/* NOTES FROM HOPPER
+ char +[BartenderLoading loadBartenderIntoPID:](void * self, void * _cmd, int arg2) {
+ processID = arg2;
+ if (processID != 0) {
+ rbx = [NSAppleEventDescriptor descriptorWithDescriptorType: typeKernelProcessID bytes:processID length:4];
+ rax = [NSAppleEventDescriptor appleEventWithEventClass:kOSASuite eventID:kGetAEUT targetDescriptor:rbx returnID:0xffffffff transactionID:0x0];
+ rax = [rax aeDesc];
+ AESendMessage(rax, NULL, (kAENoReply|kAENeverInteract|kAEDontRecord), kAEDefaultTimeout);
+ rbx = [NSAppleEventDescriptor appleEventWithEventClass:0x42544452 eventID:0x4c6f6164 targetDescriptor:rbx returnID:0xffffffff transactionID:0x0];
+ rax = [NSAppleEventDescriptor descriptorWithString:@"BartenderHelperTwoOneThree.bundle"];
+ [rbx setDescriptor:rax forKeyword:0x4e414d45];
+ rax = [rbx aeDesc];
+ rax = AESendMessage(rax, var_18, 0x1013, 0xffffffffffffffff);
+ rax = rax == 0x0 ? 0x1 : 0x0;
+ }
+ else {
+ rax = 0x0;
+ }
+ rax = rax & 0xff;
+ return rax;
+ }
+*/
+
+/// hs.application:skinject()
+/// Method
+/// Injects a Lua environment into the application
+static int application_skinject(lua_State* L) {
+    LuaSkin *skin = [LuaSkin shared];
+    int targetAppPID = (int)pid_for_app(L, 1);
+    NSAppleEventDescriptor *ae;
+    NSAppleEventDescriptor *aeMetaData;
+    OSStatus status;
+    BOOL success = NO;
+
+    if (targetAppPID == [[NSProcessInfo processInfo] processIdentifier]) {
+        [skin logWarn:@"Refusing to perform skinjection on ourselves."];
+        goto exit;
+    }
+
+    if (targetAppPID != 0) {
+        NSAppleEventDescriptor *targetApp = [NSAppleEventDescriptor descriptorWithDescriptorType:typeKernelProcessID bytes:&targetAppPID length:sizeof(targetAppPID)];
+
+        ae = [NSAppleEventDescriptor appleEventWithEventClass:kASAppleScriptSuite eventID:kGetAEUT targetDescriptor:targetApp returnID:kAutoGenerateReturnID transactionID:kAnyTransactionID];
+        status = AESendMessage([ae aeDesc], NULL, kAEWaitReply|kAENeverInteract|kAEDontRecord, kAEDefaultTimeout);
+
+        if (status != noErr) {
+            NSLog(@"kGetAEUT failed");
+            goto exit;
+        }
+
+        NSMutableDictionary *metaDict = [NSMutableDictionary dictionaryWithCapacity:2];
+        [metaDict setObject:[[NSBundle mainBundle] bundleURL] forKey:@"bundlePath"];
+        ae = [NSAppleEventDescriptor appleEventWithEventClass:'LSKN' eventID:'injc' targetDescriptor:targetApp returnID:kAutoGenerateReturnID transactionID:kAnyTransactionID];
+        aeMetaData = [NSAppleEventDescriptor descriptorWithDescriptorType:'LSKN' data:[NSKeyedArchiver archivedDataWithRootObject:metaDict]];
+        [ae setDescriptor:aeMetaData forKeyword:'meta'];
+        status = AESendMessage([ae aeDesc], NULL, kAENoReply|kAENeverInteract|kAEDontRecord, kAEDefaultTimeout);
+
+        if (status == noErr) {
+            NSLog(@"LSKNinjc sent to pid: %d", targetAppPID);
+            success = YES;
+        } else {
+            NSLog(@"LSKNinjc failed to send to pid: %d", targetAppPID);
+        }
+    }
+
+exit:
+    lua_pushboolean(L, success);
+    return 1;
+}
+
 // Trying to make this as close to paste and apply as possible, so not all aspects may apply
 // to each module... you may still need to tweak for your specific module.
 
@@ -1099,6 +1169,7 @@ static const luaL_Reg applicationlib[] = {
     {"getMenuItems", application_getMenus},
     {"launchOrFocus", application_launchorfocus},
     {"launchOrFocusByBundleID", application_launchorfocusbybundleID},
+    {"skinject", application_skinject},
 
     {NULL, NULL}
 };

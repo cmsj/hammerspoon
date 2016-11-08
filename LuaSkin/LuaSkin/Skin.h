@@ -157,7 +157,7 @@ NSString *specMaskToString(int spec);
  @abstract LuaSkin's internal Lua state object
  @discussion Provides access to the raw Lua state object. Care should be taken when using this object, to ensure you are interacting with the Lua stack in a way that makes sense
  */
-@property (atomic, readonly) lua_State *L;
+@property (atomic) lua_State *L;
 
 #pragma mark - Class lifecycle
 

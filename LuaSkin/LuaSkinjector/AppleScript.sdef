@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<dictionary title="LuaSkin Terminology">
+    <suite name="LuaSkin Suite" code="LSKN" description="LuaSkin commands">
+        <command name="inject LuaSkin" code="LSKNinjc" description="Inject LuaSkin into the application"/>
+    </suite>
+</dictionary>
