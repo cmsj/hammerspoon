@@ -112,6 +112,14 @@
 		4F9797C41BED0ADC00719F3F /* internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F9797B61BECD9AD00719F3F /* internal.m */; };
 		4F9F02BB1B3D9591009C32E5 /* LuaSkin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9F02B91B3D9568009C32E5 /* LuaSkin.framework */; };
 		4FB602EF1DDBB0A900FA751B /* layout.lua in Resources */ = {isa = PBXBuildFile; fileRef = 4FB602EE1DDBB0A900FA751B /* layout.lua */; };
+		4FB603021DDDB0BB00FA751B /* LuaSkin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9850E81B722CBF00F7E909 /* LuaSkin.framework */; };
+		4FB603081DDDB0E200FA751B /* call.c in Sources */ = {isa = PBXBuildFile; fileRef = 4FB602F51DDDB07000FA751B /* call.c */; };
+		4FB603091DDDB0E200FA751B /* ctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 4FB602F61DDDB07000FA751B /* ctype.c */; };
+		4FB6030A1DDDB0E200FA751B /* ffi.c in Sources */ = {isa = PBXBuildFile; fileRef = 4FB602F71DDDB07000FA751B /* ffi.c */; };
+		4FB6030B1DDDB0E200FA751B /* parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 4FB602F91DDDB07000FA751B /* parser.c */; };
+		4FB603131DDDD19800FA751B /* objc_dispatch.lua in Resources */ = {isa = PBXBuildFile; fileRef = 4FB603101DDDD19800FA751B /* objc_dispatch.lua */; };
+		4FB603141DDDD19800FA751B /* objc_inspect.lua in Resources */ = {isa = PBXBuildFile; fileRef = 4FB603111DDDD19800FA751B /* objc_inspect.lua */; };
+		4FB603151DDDD19800FA751B /* objc.lua in Resources */ = {isa = PBXBuildFile; fileRef = 4FB603121DDDD19800FA751B /* objc.lua */; };
 		4FBE2CF41B7261A200407788 /* LuaSkin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F9850E81B722CBF00F7E909 /* LuaSkin.framework */; };
 		4FBE2CFE1B7261E500407788 /* application.h in Headers */ = {isa = PBXBuildFile; fileRef = 4FBE2CFB1B7261E500407788 /* application.h */; };
 		4FBE2CFF1B7261E500407788 /* internal.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FBE2CFD1B7261E500407788 /* internal.m */; };
@@ -491,6 +499,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4F9797B91BED0AC800719F3F;
 			remoteInfo = task;
+		};
+		4FB6030C1DDDB0EF00FA751B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9445CA0319083251002568BB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4FB602FE1DDDB0BB00FA751B;
+			remoteInfo = ffi;
 		};
 		4FBE2D011B72624A00407788 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -929,6 +944,20 @@
 		4F9850E81B722CBF00F7E909 /* LuaSkin.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LuaSkin.framework; path = "../../../Library/Developer/Xcode/DerivedData/Hammerspoon-bcanpjyjcsxqcveiabevaoqikpya/Build/Products/Debug/LuaSkin.framework"; sourceTree = "<group>"; };
 		4F9F02B91B3D9568009C32E5 /* LuaSkin.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LuaSkin.framework; path = build/Hammerspoon/Build/Products/Debug/LuaSkin.framework; sourceTree = "<group>"; };
 		4FB602EE1DDBB0A900FA751B /* layout.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = layout.lua; path = extensions/window/layout.lua; sourceTree = SOURCE_ROOT; };
+		4FB602F11DDDB07000FA751B /* call_arm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = call_arm.h; path = extensions/ffi/call_arm.h; sourceTree = "<group>"; };
+		4FB602F21DDDB07000FA751B /* call_x64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = call_x64.h; path = extensions/ffi/call_x64.h; sourceTree = "<group>"; };
+		4FB602F31DDDB07000FA751B /* call_x64win.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = call_x64win.h; path = extensions/ffi/call_x64win.h; sourceTree = "<group>"; };
+		4FB602F41DDDB07000FA751B /* call_x86.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = call_x86.h; path = extensions/ffi/call_x86.h; sourceTree = "<group>"; };
+		4FB602F51DDDB07000FA751B /* call.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; name = call.c; path = extensions/ffi/call.c; sourceTree = "<group>"; };
+		4FB602F61DDDB07000FA751B /* ctype.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; name = ctype.c; path = extensions/ffi/ctype.c; sourceTree = "<group>"; };
+		4FB602F71DDDB07000FA751B /* ffi.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; name = ffi.c; path = extensions/ffi/ffi.c; sourceTree = "<group>"; };
+		4FB602F81DDDB07000FA751B /* ffi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ffi.h; path = extensions/ffi/ffi.h; sourceTree = "<group>"; };
+		4FB602F91DDDB07000FA751B /* parser.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; fileEncoding = 4; name = parser.c; path = extensions/ffi/parser.c; sourceTree = "<group>"; };
+		4FB603071DDDB0BB00FA751B /* libluaffi.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libluaffi.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		4FB6030E1DDDBAE900FA751B /* init.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = init.lua; path = extensions/ffi/init.lua; sourceTree = "<group>"; };
+		4FB603101DDDD19800FA751B /* objc_dispatch.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = objc_dispatch.lua; path = extensions/ffi/objc_dispatch.lua; sourceTree = "<group>"; };
+		4FB603111DDDD19800FA751B /* objc_inspect.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = objc_inspect.lua; path = extensions/ffi/objc_inspect.lua; sourceTree = "<group>"; };
+		4FB603121DDDD19800FA751B /* objc.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = objc.lua; path = extensions/ffi/objc.lua; sourceTree = "<group>"; };
 		4FBE2CE41B72543C00407788 /* init.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = init.lua; path = extensions/applescript/init.lua; sourceTree = "<group>"; };
 		4FBE2CF91B7261A200407788 /* libapplication.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libapplication.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FBE2CFB1B7261E500407788 /* application.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = application.h; path = extensions/application/application.h; sourceTree = "<group>"; };
@@ -1399,6 +1428,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				4F9797BE1BED0AC800719F3F /* LuaSkin.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4FB603011DDDB0BB00FA751B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4FB603021DDDB0BB00FA751B /* LuaSkin.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2204,6 +2241,7 @@
 				4FD0ABE21B74B32700A82496 /* eventtap */,
 				4FD0ABE81B74B34E00A82496 /* eventtapevent */,
 				4FEABA551BC7ABDE005E2CFB /* expose */,
+				4FB602F01DDDB05500FA751B /* ffi */,
 				4F4CB3C01B7388AE000EA9B6 /* fnutils */,
 				4F4CB3CF1B7391C3000EA9B6 /* fs */,
 				4F4CB3E31B739A00000EA9B6 /* geometry */,
@@ -2276,6 +2314,26 @@
 			);
 			name = windowlayout;
 			path = Hammerspoon;
+			sourceTree = "<group>";
+		};
+		4FB602F01DDDB05500FA751B /* ffi */ = {
+			isa = PBXGroup;
+			children = (
+				4FB603101DDDD19800FA751B /* objc_dispatch.lua */,
+				4FB603111DDDD19800FA751B /* objc_inspect.lua */,
+				4FB603121DDDD19800FA751B /* objc.lua */,
+				4FB6030E1DDDBAE900FA751B /* init.lua */,
+				4FB602F11DDDB07000FA751B /* call_arm.h */,
+				4FB602F21DDDB07000FA751B /* call_x64.h */,
+				4FB602F31DDDB07000FA751B /* call_x64win.h */,
+				4FB602F41DDDB07000FA751B /* call_x86.h */,
+				4FB602F51DDDB07000FA751B /* call.c */,
+				4FB602F61DDDB07000FA751B /* ctype.c */,
+				4FB602F71DDDB07000FA751B /* ffi.c */,
+				4FB602F81DDDB07000FA751B /* ffi.h */,
+				4FB602F91DDDB07000FA751B /* parser.c */,
+			);
+			name = ffi;
 			sourceTree = "<group>";
 		};
 		4FBE2CE31B72542600407788 /* applescript */ = {
@@ -2691,6 +2749,7 @@
 				D6B9465E1D139CC500177E0C /* libwebviewtoolbar.dylib */,
 				6AE181271D36E90B0097211C /* libnoises.dylib */,
 				D61F4A2F1DCFA67900AEE223 /* libsharing.dylib */,
+				4FB603071DDDB0BB00FA751B /* libluaffi.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3147,6 +3206,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		4F9797BF1BED0AC800719F3F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4FB603031DDDB0BB00FA751B /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -3990,6 +4056,23 @@
 			productReference = 4F9797C31BED0AC800719F3F /* libtask.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
+		4FB602FE1DDDB0BB00FA751B /* luaffi */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4FB603041DDDB0BB00FA751B /* Build configuration list for PBXNativeTarget "luaffi" */;
+			buildPhases = (
+				4FB602FF1DDDB0BB00FA751B /* Sources */,
+				4FB603011DDDB0BB00FA751B /* Frameworks */,
+				4FB603031DDDB0BB00FA751B /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = luaffi;
+			productName = alert;
+			productReference = 4FB603071DDDB0BB00FA751B /* libluaffi.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 		4FBE2CEF1B7261A200407788 /* application */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4FBE2CF61B7261A200407788 /* Build configuration list for PBXNativeTarget "application" */;
@@ -4403,8 +4486,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				D61F4A361DCFA71E00AEE223 /* PBXTargetDependency */,
-				6AE181301D36E9A30097211C /* PBXTargetDependency */,
 				D6B946611D139D1600177E0C /* PBXTargetDependency */,
 				D6B946631D139D1600177E0C /* PBXTargetDependency */,
 				D64964961CCB34120074540B /* PBXTargetDependency */,
@@ -4431,12 +4512,14 @@
 				4CD96BE11C73AC63009FF648 /* PBXTargetDependency */,
 				4C1CA6B11C6D9D5E00379CCE /* PBXTargetDependency */,
 				4F6B3F6C1B73F11800B2A4DE /* PBXTargetDependency */,
-				4C3D55BE1C7F0B730023B633 /* PBXTargetDependency */,
+				D61F4A361DCFA71E00AEE223 /* PBXTargetDependency */,
 				4F6B3F5F1B73F03C00B2A4DE /* PBXTargetDependency */,
 				4F6B3F461B73EF6300B2A4DE /* PBXTargetDependency */,
 				4F6B3F351B73EDFF00B2A4DE /* PBXTargetDependency */,
 				4F6B3F231B73EBDB00B2A4DE /* PBXTargetDependency */,
+				4C3D55BE1C7F0B730023B633 /* PBXTargetDependency */,
 				4F6B3F141B73E9D700B2A4DE /* PBXTargetDependency */,
+				6AE181301D36E9A30097211C /* PBXTargetDependency */,
 				4F6B3F011B73E80500B2A4DE /* PBXTargetDependency */,
 				4F6B3EEA1B73E63E00B2A4DE /* PBXTargetDependency */,
 				4F6B3ED61B73E26A00B2A4DE /* PBXTargetDependency */,
@@ -4454,6 +4537,7 @@
 				4F4CB3FA1B73A52D000EA9B6 /* PBXTargetDependency */,
 				4F29C2411C29E13500B8A69D /* PBXTargetDependency */,
 				4F4CB3CE1B738FBC000EA9B6 /* PBXTargetDependency */,
+				4FB6030D1DDDB0EF00FA751B /* PBXTargetDependency */,
 				4FD0ABF11B74B3CE00A82496 /* PBXTargetDependency */,
 				4FD0ABF31B74B3CE00A82496 /* PBXTargetDependency */,
 				D675906D1BDF12DA00EE9F75 /* PBXTargetDependency */,
@@ -4796,6 +4880,7 @@
 				D6F310D41BDF0E1700045CCD /* drawing_color */,
 				4FD0ABCD1B74B2C500A82496 /* eventtap */,
 				4FD0ABD81B74B2FA00A82496 /* eventtapevent */,
+				4FB602FE1DDDB0BB00FA751B /* luaffi */,
 				4F4CB3C21B738F1E000EA9B6 /* fs */,
 				4F29C2331C29E0A300B8A69D /* fsvolume */,
 				4F4CB3E91B73A3A1000EA9B6 /* hash */,
@@ -4868,8 +4953,11 @@
 				944A2D451989737E00D8DC90 /* Images.xcassets in Resources */,
 				944A2D431989737E00D8DC90 /* Credits.rtf in Resources */,
 				944A2D3A1989735300D8DC90 /* MainMenu.xib in Resources */,
+				4FB603131DDDD19800FA751B /* objc_dispatch.lua in Resources */,
 				949CDC001990759B00906CCE /* ConsoleWindow.xib in Resources */,
+				4FB603141DDDD19800FA751B /* objc_inspect.lua in Resources */,
 				949CDBFE1990747B00906CCE /* PreferencesWindow.xib in Resources */,
+				4FB603151DDDD19800FA751B /* objc.lua in Resources */,
 				945B65B2198D31FC002D2E30 /* setup.lua in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -5330,6 +5418,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				4F9797C41BED0ADC00719F3F /* internal.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4FB602FF1DDDB0BB00FA751B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4FB603081DDDB0E200FA751B /* call.c in Sources */,
+				4FB603091DDDB0E200FA751B /* ctype.c in Sources */,
+				4FB6030A1DDDB0E200FA751B /* ffi.c in Sources */,
+				4FB6030B1DDDB0E200FA751B /* parser.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5851,6 +5950,11 @@
 			isa = PBXTargetDependency;
 			target = 4F9797B91BED0AC800719F3F /* task */;
 			targetProxy = 4F9797C61BED0B5000719F3F /* PBXContainerItemProxy */;
+		};
+		4FB6030D1DDDB0EF00FA751B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4FB602FE1DDDB0BB00FA751B /* luaffi */;
+			targetProxy = 4FB6030C1DDDB0EF00FA751B /* PBXContainerItemProxy */;
 		};
 		4FBE2D021B72624A00407788 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -10473,6 +10577,176 @@
 				RUN_CLANG_STATIC_ANALYZER = "$(inherited)";
 				SDKROOT = "$(inherited)";
 				STRIP_INSTALLED_PRODUCT = NO;
+			};
+			name = Release;
+		};
+		4FB603051DDDB0BB00FA751B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = "$(inherited)";
+				CLANG_ANALYZER_DEADCODE_DEADSTORES = NO;
+				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = "$(inherited)";
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = "$(inherited)";
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = "$(inherited)";
+				CLANG_WARN_ASSIGN_ENUM = "$(inherited)";
+				CLANG_WARN_BOOL_CONVERSION = "$(inherited)";
+				CLANG_WARN_CONSTANT_CONVERSION = "$(inherited)";
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = "$(inherited)";
+				CLANG_WARN_EMPTY_BODY = "$(inherited)";
+				CLANG_WARN_ENUM_CONVERSION = "$(inherited)";
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = "$(inherited)";
+				CLANG_WARN_INT_CONVERSION = "$(inherited)";
+				CLANG_WARN_OBJC_EXPLICIT_OWNERSHIP_TYPE = "$(inherited)";
+				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = "$(inherited)";
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = "$(inherited)";
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = "$(inherited)";
+				CLANG_WARN_OBJC_REPEATED_USE_OF_WEAK = "$(inherited)";
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = "$(inherited)";
+				CLANG_WARN_UNREACHABLE_CODE = YES_AGGRESSIVE;
+				CLANG_WARN__ARC_BRIDGE_CAST_NONARC = "$(inherited)";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = "$(inherited)";
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				ENABLE_STRICT_OBJC_MSGSEND = "$(inherited)";
+				ENABLE_TESTABILITY = YES;
+				EXECUTABLE_PREFIX = lib;
+				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = "$(inherited)";
+				GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS = "$(inherited)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = "$(inherited)";
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = "$(inherited)";
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = "$(inherited)";
+				GCC_WARN_ABOUT_MISSING_NEWLINE = "$(inherited)";
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = "$(inherited)";
+				GCC_WARN_ABOUT_POINTER_SIGNEDNESS = "$(inherited)";
+				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = "$(inherited)";
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = "$(inherited)";
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = "$(inherited)";
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = "$(inherited)";
+				GCC_WARN_MISSING_PARENTHESES = "$(inherited)";
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = "$(inherited)";
+				GCC_WARN_PEDANTIC = "$(inherited)";
+				GCC_WARN_SHADOW = "$(inherited)";
+				GCC_WARN_SIGN_COMPARE = "$(inherited)";
+				GCC_WARN_STRICT_SELECTOR_MATCH = "$(inherited)";
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = "$(inherited)";
+				GCC_WARN_UNDECLARED_SELECTOR = "$(inherited)";
+				GCC_WARN_UNKNOWN_PRAGMAS = "$(inherited)";
+				GCC_WARN_UNUSED_FUNCTION = "$(inherited)";
+				GCC_WARN_UNUSED_LABEL = "$(inherited)";
+				GCC_WARN_UNUSED_PARAMETER = "$(inherited)";
+				GCC_WARN_UNUSED_VALUE = "$(inherited)";
+				GCC_WARN_UNUSED_VARIABLE = "$(inherited)";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				OTHER_LDFLAGS = "$(inherited)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_STATIC_ANALYZER = "$(inherited)";
+				SDKROOT = "$(inherited)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				WARNING_CFLAGS = (
+					"-Weverything",
+					"$(inherited)",
+					"-Wno-c11-extensions",
+					"-Wno-gnu-imaginary-constant",
+					"-Wno-cast-qual",
+					"-Wno-unused-function",
+					"-Wno-double-promotion",
+					"-Wno-cast-align",
+					"-Wno-unused-variable",
+					"-Wno-sign-compare",
+					"-Wno-shorten-64-to-32",
+					"-Wno-unreachable-code",
+					"-Wno-switch-enum",
+					"-Wno-bad-function-cast",
+					"-Wno-unreachable-code-break",
+					"-Wno-float-equal",
+				);
+			};
+			name = Debug;
+		};
+		4FB603061DDDB0BB00FA751B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = "$(inherited)";
+				CLANG_ANALYZER_DEADCODE_DEADSTORES = NO;
+				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = "$(inherited)";
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = "$(inherited)";
+				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = "$(inherited)";
+				CLANG_WARN_ASSIGN_ENUM = "$(inherited)";
+				CLANG_WARN_BOOL_CONVERSION = "$(inherited)";
+				CLANG_WARN_CONSTANT_CONVERSION = "$(inherited)";
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = "$(inherited)";
+				CLANG_WARN_EMPTY_BODY = "$(inherited)";
+				CLANG_WARN_ENUM_CONVERSION = "$(inherited)";
+				CLANG_WARN_IMPLICIT_SIGN_CONVERSION = "$(inherited)";
+				CLANG_WARN_INT_CONVERSION = "$(inherited)";
+				CLANG_WARN_OBJC_EXPLICIT_OWNERSHIP_TYPE = "$(inherited)";
+				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = "$(inherited)";
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = "$(inherited)";
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = "$(inherited)";
+				CLANG_WARN_OBJC_REPEATED_USE_OF_WEAK = "$(inherited)";
+				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = "$(inherited)";
+				CLANG_WARN_UNREACHABLE_CODE = YES_AGGRESSIVE;
+				CLANG_WARN__ARC_BRIDGE_CAST_NONARC = "$(inherited)";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = "$(inherited)";
+				COMBINE_HIDPI_IMAGES = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				ENABLE_STRICT_OBJC_MSGSEND = "$(inherited)";
+				EXECUTABLE_PREFIX = lib;
+				GCC_TREAT_IMPLICIT_FUNCTION_DECLARATIONS_AS_ERRORS = "$(inherited)";
+				GCC_TREAT_INCOMPATIBLE_POINTER_TYPE_WARNINGS_AS_ERRORS = "$(inherited)";
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = "$(inherited)";
+				GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS = "$(inherited)";
+				GCC_WARN_ABOUT_MISSING_FIELD_INITIALIZERS = "$(inherited)";
+				GCC_WARN_ABOUT_MISSING_NEWLINE = "$(inherited)";
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = "$(inherited)";
+				GCC_WARN_ABOUT_POINTER_SIGNEDNESS = "$(inherited)";
+				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = "$(inherited)";
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = "$(inherited)";
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = "$(inherited)";
+				GCC_WARN_INITIALIZER_NOT_FULLY_BRACKETED = "$(inherited)";
+				GCC_WARN_MISSING_PARENTHESES = "$(inherited)";
+				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = "$(inherited)";
+				GCC_WARN_PEDANTIC = "$(inherited)";
+				GCC_WARN_SHADOW = "$(inherited)";
+				GCC_WARN_SIGN_COMPARE = "$(inherited)";
+				GCC_WARN_STRICT_SELECTOR_MATCH = "$(inherited)";
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = "$(inherited)";
+				GCC_WARN_UNDECLARED_SELECTOR = "$(inherited)";
+				GCC_WARN_UNKNOWN_PRAGMAS = "$(inherited)";
+				GCC_WARN_UNUSED_FUNCTION = "$(inherited)";
+				GCC_WARN_UNUSED_LABEL = "$(inherited)";
+				GCC_WARN_UNUSED_PARAMETER = "$(inherited)";
+				GCC_WARN_UNUSED_VALUE = "$(inherited)";
+				GCC_WARN_UNUSED_VARIABLE = "$(inherited)";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = "$(inherited)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_STATIC_ANALYZER = "$(inherited)";
+				SDKROOT = "$(inherited)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				WARNING_CFLAGS = (
+					"-Weverything",
+					"$(inherited)",
+					"-Wno-c11-extensions",
+					"-Wno-gnu-imaginary-constant",
+					"-Wno-cast-qual",
+					"-Wno-unused-function",
+					"-Wno-double-promotion",
+					"-Wno-cast-align",
+					"-Wno-unused-variable",
+					"-Wno-sign-compare",
+					"-Wno-shorten-64-to-32",
+					"-Wno-unreachable-code",
+					"-Wno-switch-enum",
+					"-Wno-bad-function-cast",
+					"-Wno-unreachable-code-break",
+					"-Wno-float-equal",
+				);
 			};
 			name = Release;
 		};
@@ -15978,6 +16252,15 @@
 			buildConfigurations = (
 				4F9797C11BED0AC800719F3F /* Debug */,
 				4F9797C21BED0AC800719F3F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4FB603041DDDB0BB00FA751B /* Build configuration list for PBXNativeTarget "luaffi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4FB603051DDDB0BB00FA751B /* Debug */,
+				4FB603061DDDB0BB00FA751B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

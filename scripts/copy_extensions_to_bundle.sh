@@ -164,3 +164,12 @@ cp -av "${BUILT_PRODUCTS_DIR}/libfsvolume.dylib" "${HS_DST}/fs/volume.so"
 
 # Special (compiling) copier for hs.chooser
 ibtool --compile "${HS_RESOURCES}/HSChooserWindow.nib" "${SRCROOT}/extensions/chooser/HSChooserWindow.xib"
+
+# Special copier for hs.ffi
+mkdir -pv "${HS_DST}/ffi"
+cp -av "${SRCROOT}/extensions/ffi/init.lua" "${HS_DST}/ffi/init.lua"
+cp -av "${SRCROOT}/extensions/ffi/objc.lua" "${HS_DST}/ffi/objc.lua"
+cp -av "${SRCROOT}/extensions/ffi/objc_dispatch.lua" "${HS_DST}/ffi/objc_dispatch.lua"
+cp -av "${SRCROOT}/extensions/ffi/objc_inspect.lua" "${HS_DST}/ffi/objc_inspect.lua"
+cp -av "${BUILT_PRODUCTS_DIR}/libluaffi.dylib" "${HS_DST}/ffi/luaffi.so"
+
