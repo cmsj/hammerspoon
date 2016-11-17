@@ -200,3 +200,12 @@ cp -av "${BUILT_PRODUCTS_DIR}/liblsqlite3.dylib" "${HS_DST}/sqlite3/lsqlite3.so"
 
 # Special copier for hs.spoons templates directory
 cp -av "${SRCROOT}/extensions/spoons/templates" "${HS_DST}/spoons"
+
+# Special copier for hs.ffi
+mkdir -pv "${HS_DST}/ffi"
+cp -av "${SRCROOT}/extensions/ffi/init.lua" "${HS_DST}/ffi/init.lua"
+cp -av "${SRCROOT}/extensions/ffi/objc.lua" "${HS_DST}/ffi/objc.lua"
+cp -av "${SRCROOT}/extensions/ffi/objc_dispatch.lua" "${HS_DST}/ffi/objc_dispatch.lua"
+cp -av "${SRCROOT}/extensions/ffi/objc_inspect.lua" "${HS_DST}/ffi/objc_inspect.lua"
+cp -av "${BUILT_PRODUCTS_DIR}/libffi.dylib" "${HS_DST}/ffi/luaffi.so"
+
