@@ -212,7 +212,7 @@ NSString *specMaskToString(int spec) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconstant-conversion"
-    luaL_newlib(self.L, functions);
+    luaL_register(self.L, "LuaSkin", functions);
     if (metaFunctions != nil) {
         luaL_newlib(self.L, metaFunctions);
 #pragma GCC diagnostic pop

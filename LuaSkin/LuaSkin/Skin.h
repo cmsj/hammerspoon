@@ -14,11 +14,11 @@
 
 
 @import Foundation;
-#import "lobject.h"
-#import "lapi.h"
 #import "lauxlib.h"
 #import "lualib.h"
 #import "lua.h"
+
+#define LUA_OK 0
 
 // Abstract Crashlytics logging because it keeps hurting us, but in a way that doesn't force a dependency on Crashlytics
 #ifdef CLS_LOG
