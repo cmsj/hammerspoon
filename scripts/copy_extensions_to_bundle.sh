@@ -17,6 +17,7 @@ export HS_MODULES="application \
     distributednotifications \
     dockicon \
     drawing \
+    eventkit \
     eventtap \
     fs \
     hash \
