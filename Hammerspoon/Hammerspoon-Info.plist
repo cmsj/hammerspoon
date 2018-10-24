@@ -216,12 +216,16 @@
 	<string>Hammerspoon needs to send events to automate applications.</string>
 	<key>NSAppleScriptEnabled</key>
 	<true/>
+	<key>NSCalendarsUsageDescription</key>
+	<string>hs.eventkit requires access to Calendars to work correctly.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Released under MIT license.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>hs.eventkit requires access to Reminders to work correctly.</string>
 	<key>NSServices</key>
 	<array>
 		<dict>

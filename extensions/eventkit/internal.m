@@ -329,18 +329,18 @@ static int calendar_object_eq(lua_State *L) {
     // can't get here if at least one of us isn't a userdata type, and we only care if both types are ours,
     // so use luaL_testudata before the macro causes a lua error
     if (luaL_testudata(L, 1, STORE_TAG) && luaL_testudata(L, 2, STORE_TAG)) {
-        LuaSkin *skin = [LuaSkin shared] ;
-        HSCalendar *obj1 = [skin luaObjectAtIndex:1 toClass:"HSCalendar"] ;
-        HSCalendar *obj2 = [skin luaObjectAtIndex:2 toClass:"HSCalendar"] ;
-        lua_pushboolean(L, [obj1 isEqualTo:obj2]) ;
+        LuaSkin *skin = [LuaSkin shared];
+        HSCalendar *obj1 = [skin luaObjectAtIndex:1 toClass:"HSCalendar"];
+        HSCalendar *obj2 = [skin luaObjectAtIndex:2 toClass:"HSCalendar"];
+        lua_pushboolean(L, [obj1 isEqualTo:obj2]);
     } else {
-        lua_pushboolean(L, NO) ;
+        lua_pushboolean(L, NO);
     }
-    return 1 ;
+    return 1;
 }
 
 static int calendar_object_gc(lua_State* L) {
-    HSCalendar *theDevice = get_objectFromUserdata(__bridge_transfer HSCalendar, L, 1, STORE_TAG) ;
+    HSCalendar *theDevice = get_objectFromUserdata(__bridge_transfer HSCalendar, L, 1, STORE_TAG);
     if (theDevice) {
         theDevice.selfRefCount--;
         if (theDevice.selfRefCount == 0) {
@@ -349,9 +349,9 @@ static int calendar_object_gc(lua_State* L) {
     }
 
     // Remove the Metatable so future use of the variable in Lua won't think its valid
-    lua_pushnil(L) ;
-    lua_setmetatable(L, 1) ;
-    return 0 ;
+    lua_pushnil(L);
+    lua_setmetatable(L, 1);
+    return 0;
 }
 
 #pragma mark Lua function library declarations
