@@ -1035,6 +1035,29 @@ static int imageFromURL(lua_State *L) {
     return 1 ;
 }
 
+/// hs.image.imageFromData(data) -> object
+/// Constructor
+/// Creates ah `hs.image` object from image data
+///
+/// Parameters:
+///  * data - Binary data of an image
+///
+/// Returns:
+///  * An `hs.image` object or nil, if the data could not be loaded
+static int imageFromData(lua_State *L) {
+    LuaSkin *skin = [LuaSkin shared];
+    [skin checkArgs:LS_TANY, LS_TBREAK];
+
+    NSImage *image = nil;
+    NSData *data = [skin toNSObjectAtIndex:1 withOptions:LS_NSLuaStringAsDataOnly];
+    if (data) {
+        image = [[NSImage alloc] initWithData:data];
+        NSLog(@"Loaded image from data (%lu): %@", data.length, image);
+    }
+    [skin pushNSObject:image];
+    return 1;
+}
+
 /// hs.image.imageFromAppBundle(bundleID) -> object
 /// Constructor
 /// Creates an `hs.image` object using the icon from an App
@@ -1665,6 +1688,7 @@ static luaL_Reg moduleLib[] = {
     {"imageFromPath",             imageFromPath},
     {"imageFromURL",              imageFromURL},
     {"imageFromASCII",            imageWithContextFromASCII},
+    {"imageFromData",             imageFromData},
 //     {"imageWithContextFromASCII", imageWithContextFromASCII},
     {"imageFromName",             imageFromName},
     {"imageFromAppBundle",        imageFromApp},
