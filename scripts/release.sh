@@ -42,7 +42,7 @@ assert
 build
 validate
 notarize
-localtest
+#localtest
 #prepare_upload
 #archive
 #upload
