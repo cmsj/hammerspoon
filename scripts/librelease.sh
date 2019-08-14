@@ -50,6 +50,8 @@ function notarize() {
   compress_hammerspoon_app
   upload_to_notary_service
   wait_for_notarization
+  staple_notarization
+  assert_notarization_acceptance
 }
 
 function localtest() {
@@ -280,7 +282,7 @@ function upload_to_notary_service() {
                 2>&1 | tee "../archive/${VERSION}/notarization-upload.log" \
     )
     if [ "$?" != "0" ]; then
-        echo $OUTPUT
+        echo "$OUTPUT"
         fail "Notarization upload failed."
     fi
     NOTARIZATION_REQUEST_UUID=$(echo ${OUTPUT} | sed -e 's/.*RequestUUID = //')
@@ -291,12 +293,16 @@ function upload_to_notary_service() {
 function wait_for_notarization() {
     echo -n "Waiting for Notarization..."
     while true ; do
-        echo -n "."
         local OUTPUT=""
         OUTPUT=$(check_notarization_status)
         if [ "${OUTPUT}" == "Success" ] ; then
             echo ""
             break
+        elif [ "${OUTPUT}" == "Working" ]; then
+            echo -n "."
+        else
+            echo ""
+            fail "Unknown output: ${OUTPUT}"
         fi
         sleep 60
     done
@@ -310,14 +316,17 @@ function check_notarization_status() {
                 --password "${NOTARIZATION_PASSWORD}" \
                 2>&1 \
     )
-    local RESULT=$(echo "${OUTPUT}" | grep "Status: " | sed -e 's/.*Status: //')
+    local RESULT=""
+    RESULT=$(echo "${OUTPUT}" | grep "Status: " | sed -e 's/.*Status: //')
     if [ "${RESULT}" == "in progress" ]; then
         return
     fi
 
-    local NOTARIZATION_LOG_URL=$(echo "${OUTPUT}" | grep "LogFileURL: " | awk '{ print $2 }')
+    local NOTARIZATION_LOG_URL=""
+    NOTARIZATION_LOG_URL=$(echo "${OUTPUT}" | grep "LogFileURL: " | awk '{ print $2 }')
     echo "Fetching Notarization log: ${NOTARIZATION_LOG_URL}" >/dev/stderr
-    local STATUS=$(curl "${NOTARIZATION_LOG_URL}")
+    local STATUS=""
+    STATUS=$(curl "${NOTARIZATION_LOG_URL}")
     RESULT=$(echo "${STATUS}" | jq .status)
 
     case "${RESULT}" in
@@ -329,7 +338,7 @@ function check_notarization_status() {
             ;;
         *)
             echo "${STATUS}" | tee "../archive/${VERSION}/notarization.log"
-            fail "Notarization failed: ${RESULT}"
+            echo "Notarization failed: ${RESULT}"
             ;;
     esac
 }
