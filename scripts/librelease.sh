@@ -261,12 +261,10 @@ function build_hammerspoon_app() {
 
 function assert_notarization_acceptance() {
     echo "Ensuring Notarization acceptance..."
-    pushd "${HAMMERSPOON_HOME}/build" >/dev/null
-    if ! xcrun stapler validate "Hammerspoon-${VERSION}.zip" ; then
+    if ! xcrun stapler validate "${HAMMERSPOON_HOME}/build/Hammerspoon.app" ; then
         fail "Notarization rejection"
         exit 1
     fi
-    popd >/dev/null
 }
 
 function upload_to_notary_service() {
@@ -319,6 +317,7 @@ function check_notarization_status() {
     local RESULT=""
     RESULT=$(echo "${OUTPUT}" | grep "Status: " | sed -e 's/.*Status: //')
     if [ "${RESULT}" == "in progress" ]; then
+        echo "Working"
         return
     fi
 
@@ -327,7 +326,7 @@ function check_notarization_status() {
     echo "Fetching Notarization log: ${NOTARIZATION_LOG_URL}" >/dev/stderr
     local STATUS=""
     STATUS=$(curl "${NOTARIZATION_LOG_URL}")
-    RESULT=$(echo "${STATUS}" | jq .status)
+    RESULT=$(echo "${STATUS}" | jq -r .status)
 
     case "${RESULT}" in
         "Accepted")
