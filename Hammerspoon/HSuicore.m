@@ -140,6 +140,7 @@
         _pid = app.processIdentifier;
         _elementRef = appRef;
         _runningApp = app;
+        _uiElement = [[HSuielement alloc] initWithElementRef:_elementRef];
         _selfRefCount = 0;
     } else {
         CFRelease(appRef);
@@ -559,6 +560,8 @@ cleanup:
         if (!err) {
             _winID = winID;
         }
+        
+        _uiElement = [[HSuielement alloc] initWithElementRef:_elementRef];
     }
     return self;
 }
