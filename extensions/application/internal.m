@@ -1094,7 +1094,7 @@ static int application_uielement_role(lua_State *L) {
     HSapplication *app = [skin toNSObjectAtIndex:1];
     HSuielement *uiElement = app.uiElement;
     [skin pushNSObject:uiElement.role];
-    
+
     return 1;
 }
 
@@ -1105,7 +1105,7 @@ static int application_uielement_selectedText(lua_State *L) {
     HSapplication *app = [skin toNSObjectAtIndex:1];
     HSuielement *uiElement = app.uiElement;
     [skin pushNSObject:uiElement.selectedText];
-    
+
     return 1;
 }
 
