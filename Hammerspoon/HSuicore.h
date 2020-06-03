@@ -18,7 +18,7 @@
 -(void)dealloc;
 
 // Instance methods
--(id)newWatcher:(int)callbackRef withUserdata:(int)userDataRef;
+-(id)newWatcherAtIndex:(int)callbackRefIndex withUserdataAtIndex:(int)userDataRefIndex withLuaState:(lua_State *)L;
 -(id)getElementProperty:(NSString *)property withDefaultValue:(id)defaultValue;
 -(BOOL)isWindow;
 -(BOOL)isWindow:(NSString *)role;

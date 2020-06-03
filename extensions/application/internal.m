@@ -1110,8 +1110,15 @@ static int application_uielement_selectedText(lua_State *L) {
 }
 
 static int application_uielement_newWatcher(lua_State *L) {
-    // FIXME: Implement this
-    return 0;
+    LuaSkin *skin = [LuaSkin sharedWithState:L];
+    [skin checkArgs:LS_TUSERDATA, USERDATA_TAG, LS_TFUNCTION, LS_TANY|LS_TOPTIONAL, LS_TBREAK];
+
+    HSapplication *app = [skin toNSObjectAtIndex:1];
+    HSuielement *uiElement = app.uiElement;
+    HSuielementWatcher *watcher = [uiElement newWatcherAtIndex:1 withUserdataAtIndex:2 withLuaState:L];
+    [skin pushNSObject:watcher];
+
+    return 1;
 }
 
 #pragma mark - Lua<->NSObject Conversion Functions
