@@ -27,6 +27,7 @@ function testOrderedWindows()
 
   local orderedWindows = hs.window.orderedWindows()
   assertIsEqual("table", type(orderedWindows))
+  assertIsEqual(hs.inspect(orderedWindows) .. " :: " .. hs.inspect(hs.window.visibleWindows()) .. " :: " .. hs.inspect(hs.window._orderedwinids()), "lol")
   assertGreaterThan(1, #orderedWindows)
   return success()
 end
