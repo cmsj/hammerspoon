@@ -165,7 +165,6 @@
         allWindows = [[NSMutableArray alloc] initWithCapacity:windowCount];
         for (NSInteger i = 0; i < windowCount; i++) {
             AXUIElementRef win = CFArrayGetValueAtIndex(windows, i);
-            CFRetain(win);
             HSwindow *window = [[HSwindow alloc] initWithAXUIElementRef:win];
             [allWindows addObject:window];
         }
@@ -179,6 +178,7 @@
     CFTypeRef window;
     if (AXUIElementCopyAttributeValue(self.elementRef, kAXMainWindowAttribute, &window) == kAXErrorSuccess) {
         mainWindow = [[HSwindow alloc] initWithAXUIElementRef:window];
+        CFRelease(window);
     }
     return mainWindow;
 }
@@ -188,6 +188,7 @@
     CFTypeRef window;
     if (AXUIElementCopyAttributeValue(self.elementRef, kAXFocusedWindowAttribute, &window) == kAXErrorSuccess) {
         focusedWindow = [[HSwindow alloc] initWithAXUIElementRef:window];
+        CFRelease(window);
     }
     return focusedWindow;
 }
@@ -234,9 +235,11 @@
     NSNumber* isFrontmost = @NO;
     AXError result;
 
-    result = AXUIElementCopyAttributeValue(self.elementRef, kAXFrontmostAttribute, (CFTypeRef *)&_isFrontmost);
+    result = AXUIElementCopyAttributeValue(self.elementRef,
+                                           (__bridge CFStringRef)NSAccessibilityFrontmostAttribute,
+                                           &_isFrontmost);
     if (result == kAXErrorSuccess) {
-        isFrontmost = (__bridge_transfer NSNumber*)_isFrontmost;
+        isFrontmost = CFBridgingRelease(_isFrontmost);
     }
 
     /* This is how Hammerspoon used to do this
@@ -566,6 +569,7 @@ cleanup:
 
         if (result == kAXErrorSuccess) {
             window = [[HSwindow alloc] initWithAXUIElementRef:win];
+            CFRelease(win);
         }
     }
     return window;
@@ -576,6 +580,7 @@ cleanup:
 -(HSwindow *)initWithAXUIElementRef:(AXUIElementRef)winRef {
     self = [super init];
     if (self) {
+        CFRetain(winRef);
         _elementRef = winRef;
         _selfRefCount = 0;
 
@@ -597,7 +602,7 @@ cleanup:
 
 #pragma mark - Destructor
 -(void)dealloc {
-    CFRelease(self.elementRef);
+    CFRelease(_elementRef);
 }
 
 #pragma mark - Instance methods
