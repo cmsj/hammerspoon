@@ -31,11 +31,11 @@ function testOrderedWindows()
   assertIsEqual("table", type(orderedWindows))
   --assertIsEqual(hs.inspect(orderedWindows) .. " :: " .. hs.inspect(hs.window.visibleWindows()) .. " :: " .. hs.inspect(hs.window._orderedwinids()), "lol")
   hs.timer.usleep(500000)
-  local activityMonitor = hs.application.find("Activity Monitor")
+  local activityMonitor = hs.application.get("Activity Monitor")
   if (activityMonitor) then
     activityMonitor:kill()
   end
-  local systemInformation = hs.application.find("System Information")
+  local systemInformation = hs.application.get("System Information")
   if (systemInformation) then
     systemInformation:kill()
   end
