@@ -233,28 +233,18 @@
 -(BOOL)isFrontmost {
     CFTypeRef _isFrontmost;
     NSNumber* isFrontmost = @NO;
-    AXError result;
 
-    result = AXUIElementCopyAttributeValue(self.elementRef,
-                                           (__bridge CFStringRef)NSAccessibilityFrontmostAttribute,
-                                           &_isFrontmost);
-    if (result == kAXErrorSuccess) {
-        isFrontmost = CFBridgingRelease(_isFrontmost);
-    }
-
-    /* This is how Hammerspoon used to do this
-    if (AXUIElementCopyAttributeValue(self.elementRef,
-                                      (CFStringRef)NSAccessibilityFrontmostAttribute,
-                                      (CFTypeRef *)&_isFrontmost) == kAXErrorSuccess) {
-        isFrontmost = CFBridgingRelease(_isFrontmost);
-    } */
-    else {
+    if (kAXErrorSuccess == AXUIElementCopyAttributeValue(self.elementRef,
+                                                         (__bridge CFStringRef)NSAccessibilityFrontmostAttribute,
+                                                         &_isFrontmost)) {
+        isFrontmost = (__bridge_transfer NSNumber *)_isFrontmost;
+    } else {
         [LuaSkin logError:[NSString stringWithFormat:@"Unable to fetch element attribute NSAccessibilityFrontmostAttribute for: %@", [self.runningApp localizedName]]];
     }
 
-    [LuaSkin logBreadcrumb:[NSString stringWithFormat:@"FRONTMOST: %@:%@:%@", [self title], isFrontmost, AXIsProcessTrusted() ? @"YES" : @"NO"]];
+    [LuaSkin logBreadcrumb:[NSString stringWithFormat:@"FRONTMOST: %@:%@:%@", self.title, isFrontmost, AXIsProcessTrusted() ? @"YES" : @"NO"]];
 
-    return [isFrontmost boolValue];
+    return isFrontmost.boolValue;
 }
 
 -(NSString *)title {
