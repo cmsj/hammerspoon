@@ -6,6 +6,7 @@ hs.application = require("hs.application")
 
 elem = nil
 elemEvent = nil
+watcher = nil
 
 function getPrefs()
   hs.openPreferences()
