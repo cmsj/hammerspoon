@@ -126,3 +126,35 @@ function testApplicationWatcher()
 
   return success()
 end
+
+function testUIelementWatcherValues()
+    assertIsNotNil(elem)
+    elem:kill()
+
+    if (type(elemEvent) == "string" and elemEvent == hs.uielement.watcher.elementDestroyed) then
+        return success()
+    else
+        return "Waiting for success..."
+    end
+end
+
+function testUIelementWatcher()
+    assertTrue(hs.accessibilityState(false))
+    app = hs.application.open("com.apple.calculator", 5, true)
+    assertIsUserdataOfType("hs.application", app)
+
+    elem = hs.uielement.focusedElement()
+    assertIsNotNil(elem)
+
+    watcher = elem:newWatcher(function(element, event, thisWatcher, userdata)
+        hs.alert.show("watcher-callback")
+        elemEvent = event
+        assertIsEqual(watcher, thisWatcher:stop())
+    end)
+
+    assertIsNotNil(watcher)
+    assertIsEqual(watcher, watcher:start({hs.uielement.watcher.elementDestroyed}))
+    assertIsEqual(elem, watcher:element())
+
+    return success()
+end

@@ -34,6 +34,11 @@
     RUN_TWO_PART_LUA_TEST_WITH_TIMEOUT(5)
 }
 
+- (void)testUIelementWatcher {
+    SKIP_IN_TRAVIS()
+    RUN_TWO_PART_LUA_TEST_WITH_TIMEOUT(5)
+}
+
 - (void)testHammerspoonElements {
     SKIP_IN_TRAVIS()
     RUN_LUA_TEST()
